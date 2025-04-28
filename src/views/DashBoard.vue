@@ -28,11 +28,11 @@
           </div>
           <div class="card-body">
             <div class="mb-3">
-              <h5 class="card-title">Portfolio Website</h5>
+              <h5 class="timeline-date">Portfolio Website</h5>
               <p class="card-text">Personal portfolio built with Vue.js</p>
             </div>
             <div class="mb-3">
-              <h5 class="card-title">E-commerce App</h5>
+              <h5 class="timeline-date">E-commerce App</h5>
               <p class="card-text">Online store with payment integration</p>
             </div>
           </div>
@@ -102,7 +102,7 @@
   <script setup>
 </script>
   
-  <style>
+  <style scoped>
 @import "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css";
 
 :root {
@@ -134,6 +134,7 @@ body {
   overflow: hidden;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
 }
 
 .card:hover {
