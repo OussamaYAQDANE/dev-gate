@@ -29,7 +29,10 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
   const snapshot = await getDoc(doc(db,"users", user.uid));
-  profilePic.value = snapshot.data().profilePic;
+  if (snapshot.exists()){
+    profilePic.value = snapshot.data().profilePic;
+    
+  }
   isLoading.value = false;
 });
 </script>

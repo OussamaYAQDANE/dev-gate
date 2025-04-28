@@ -15,7 +15,7 @@
           alt=""
           class="ms-3 me-3"
         />
-        OUSSAMA
+        Dev Gate
       </div>
       <div class="nav-links d-flex gap-3 me-4">
         <router-link to="/" exact-active-class="active-link" class="nav-link"
