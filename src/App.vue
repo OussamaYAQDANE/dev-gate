@@ -15,6 +15,7 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
+  color: #e6e6e6
 }
 
 </style>
