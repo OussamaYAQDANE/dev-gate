@@ -3,7 +3,7 @@ import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
 import DashBoard from '@/views/DashBoard.vue'
-
+import ObjectivesPage from '@/views/ObjectivesPage.vue'
 
 
 const routes = [
@@ -15,6 +15,10 @@ const routes = [
       {
         path: "", 
         component: DashBoard
+      },
+      {
+        path: "objectives",
+        component: ObjectivesPage
       }
     ]
   },

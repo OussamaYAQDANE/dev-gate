@@ -40,7 +40,7 @@
       </div>
 
       <!-- Objectives Card -->
-      <div class="col-md-6 col-lg-3">
+      <div @click="goToObjectives" class="col-md-6 col-lg-3">
         <div class="card h-100 card-blue">
           <div class="card-header text-white fw-bold">
             <i class="bi bi-bullseye me-2"></i>Objectives
@@ -100,7 +100,11 @@
 </template>
   
 <script setup>
-
+  import { useRouter } from 'vue-router';
+  const router = useRouter();
+  const goToObjectives = ()=>{
+    router.push('/objectives')
+  }
   
 </script>
   
