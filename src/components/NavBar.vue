@@ -18,7 +18,7 @@
         Dev Gate
       </div>
       <div class="nav-links d-flex gap-3 me-4">
-        <router-link to="/" exact-active-class="active-link" class="nav-link"
+        <!-- <router-link to="/" exact-active-class="active-link" class="nav-link"
           >Messaging</router-link
         >
         <router-link
@@ -26,7 +26,7 @@
           exact-active-class="active-link"
           class="nav-link"
           >Search</router-link
-        >
+        > -->
         
       </div>
       <div
