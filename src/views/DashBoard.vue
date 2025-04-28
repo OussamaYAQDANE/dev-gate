@@ -4,7 +4,7 @@
 
     <div class="row g-4">
       <!-- Competences Card -->
-      <div class="col-md-6 col-lg-3">
+      <div class="col-md-6 col-lg-3" @click="$router.push('/competences')">
         <div class="card h-100 card-violet">
           <div class="card-header text-white fw-bold">
             <i class="bi bi-star-fill me-2"></i>Competences
