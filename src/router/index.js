@@ -3,8 +3,7 @@ import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
 import DashBoard from '@/views/DashBoard.vue'
-import CompentencePage from '@/components/CompentencePage.vue'
-
+import ConpetensePage from '@/views/ConpetensePage.vue'
 
 const routes = [
   {
@@ -16,10 +15,9 @@ const routes = [
         path: "", 
         component: DashBoard
       },
-      {
-        path: '/competences',
-        component: CompentencePage
-      },
+      {path: '/competenses',
+        component: ConpetensePage,
+      }
     ]
   },
   
