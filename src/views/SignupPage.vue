@@ -145,7 +145,7 @@
           </div>
           <label class="form-label">Username</label>
           <div class="input-group">
-            <span class="input-group-text">@</span>
+            <span class="input-group-text text-black">@</span>
             <input
               class="form-control"
               v-model="username"
@@ -224,10 +224,9 @@
 </template>
   
 <script setup>
-/* eslint-disable */
+
 import { auth, db } from "@/firebase/firebase-config";
 import {
-  connectAuthEmulator,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 import {
@@ -239,12 +238,8 @@ import {
   where,
   getDocs,
 } from "firebase/firestore";
-import { storage } from "@/firebase/firebase-config";
-import {
-  uploadBytesResumable,
-  getDownloadURL,
-  ref as storageRef,
-} from "firebase/storage";
+
+
 import { ref } from "vue";
 import router from "@/router";
 import defaultProfile from "../assets/default-profile.png";
@@ -391,45 +386,49 @@ async function uploadProfile() {
       return;
     }
 
-    const imageRef = storageRef(
-      storage,
-      `${auth.currentUser.uid}/images/${new Date().toISOString() + file.name}`
-    );
-
-    const uploadTask = uploadBytesResumable(imageRef, file);
-
-    uploadTask.on(
-      "state_changed",
-      () => {},
-      () => {
-        fileError.value = "An error occured, try again";
-        isLoading.value = false;
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          await setDoc(
-            doc(db, "users", auth.currentUser.uid),
-            { profilePic: downloadURL, bio: bio.value },
-            { merge: true }
-          );
-          router.replace("/");
-        } catch (error) {
-          console.log(error);
-          fileError.value = "An error occured, try again";
-        } finally {
-          isLoading.value = false;
-        }
+    // Create a FormData object to send the file to Cloudinary
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'profilepics'); // Replace with your Cloudinary upload preset
+    
+    // Upload to Cloudinary via their API
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/dshdjyc0h/image/upload`, // Replace with your Cloudinary cloud name
+      {
+        method: 'POST',
+        body: formData
       }
     );
+
+    if (!response.ok) {
+      throw new Error('Failed to upload to Cloudinary');
+    }
+
+    const data = await response.json();
+    const downloadURL = data.secure_url;
+
+    // Update user profile in Firestore with the Cloudinary URL
+    await setDoc(
+      doc(db, "users", auth.currentUser.uid),
+      { profilePic: downloadURL, bio: bio.value },
+      { merge: true }
+    );
+    
+    router.replace("/");
   } catch (error) {
     console.log(error);
+    fileError.value = "An error occurred, try again";
+  } finally {
     isLoading.value = false;
   }
 }
 </script>
   
-
+<style scoped>
+:root {
+  --text-primary: #000
+}
+</style>
 
 
 

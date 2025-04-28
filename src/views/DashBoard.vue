@@ -28,11 +28,11 @@
           </div>
           <div class="card-body">
             <div class="mb-3">
-              <h5 class="card-title">Portfolio Website</h5>
+              <h5 class="timeline-date">Portfolio Website</h5>
               <p class="card-text">Personal portfolio built with Vue.js</p>
             </div>
             <div class="mb-3">
-              <h5 class="card-title">E-commerce App</h5>
+              <h5 class="timeline-date">E-commerce App</h5>
               <p class="card-text">Online store with payment integration</p>
             </div>
           </div>
@@ -99,14 +99,16 @@
   </div>
 </template>
   
-  <script setup>
+<script setup>
+
+  
 </script>
   
-  <style>
+<style >
+
 @import "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css";
 
 :root {
-  --primary-color: #a210ee;
   --primary-glow: #d275ff;
   --card-violet: #8e44ad;
   --card-pink: #c71585;
@@ -114,11 +116,6 @@
   --card-green: #16a085;
 }
 
-body {
-  background-color: #121212;
-  color: #e0e0e0;
-  font-family: "Poppins", sans-serif;
-}
 
 .glow-text {
   color: var(--primary-glow);
@@ -134,6 +131,7 @@ body {
   overflow: hidden;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
 }
 
 .card:hover {
