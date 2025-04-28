@@ -150,9 +150,5 @@
   });
   </script>
 <style scoped>
-body{
-  color: white;
-  background-color: white;
-}
 
 </style>
