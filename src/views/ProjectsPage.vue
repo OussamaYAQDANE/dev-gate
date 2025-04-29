@@ -45,7 +45,7 @@
         v-if="displayMode === 'gallery'" 
         :projects="projects" 
         :is-owner="isOwner"
-        @edit="editProject"
+        @edit="openEditModal"
         @delete-confirm="confirmDelete"
       />
 
@@ -54,7 +54,7 @@
         v-else
         :projects="projects"
         :is-owner="isOwner"
-        @edit="editProject"
+        @edit="openEditModal"
         @delete-confirm="confirmDelete"
       />
     </template>
@@ -64,14 +64,23 @@
       :project="projectToDelete"
       :deleting="deleting"
       @confirm="deleteProject"
-      @close="closeModal"
+      @close="closeModal('deleteConfirmModal')"
+    />
+    
+    <!-- Edit Project Modal -->
+    <EditProjectModal
+      :project="projectToEdit"
+      :saving="saving"
+      @submit="saveProject"
+      @close="closeModal('editProjectModal')"
     />
   </div>
 </template>
   
 <script setup>
+/* eslint-disable */
 import { ref, onMounted, onUnmounted } from "vue";
-import { collection, getDocs, getDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute, useRouter } from "vue-router";
 
@@ -79,6 +88,7 @@ import { db } from "@/firebase/firebase-config";
 import ProjectGallery from "@/components/Projects/ProjectGallery.vue";
 import ProjectList from "@/components/Projects/ProjectList.vue";
 import DeleteConfirmModal from "@/components/Projects/DeleteConfirmModal.vue";
+import EditProjectModal from "@/components/Projects/EditProjectModal.vue";
 
 const auth = getAuth();
 const route = useRoute();
@@ -95,6 +105,10 @@ const profileUserUid = ref(route.params.uid);
 const profileUsername = ref("");
 const projectToDelete = ref(null);
 const deleting = ref(false);
+
+// New refs for edit functionality
+const projectToEdit = ref(null);
+const saving = ref(false);
 
 // Check if the current user is the owner of the profile
 const checkOwnership = () => {
@@ -161,24 +175,52 @@ const fetchProjects = async () => {
   }
 };
 
-// Handle project editing
-const editProject = (project) => {
-  router.push(`/edit-project/${project.id}`);
+// Open the edit modal
+const openEditModal = (project) => {
+  projectToEdit.value = { ...project }; // Make a copy of the project
+  openModal('editProjectModal');
 };
+
+// Save the edited project
+const saveProject = async (updatedProject) => {
+  if (!updatedProject || !isOwner.value) return;
+  
+  try {
+    saving.value = true;
+    // Update the project in Firestore
+    const projectRef = doc(db, "users", auth.currentUser.uid, "projects", projectToEdit.value.id);
+    // Remove the id field before updating
+    const { id, ...projectData } = updatedProject;
+    await updateDoc(projectRef, projectData);
+    // Update the project in the local array
+    const index = projects.value.findIndex(p => p.id === projectToEdit.value.id);
+    if (index !== -1) {
+     
+      projects.value[index] = { ...updatedProject };
+      
+    }
+    
+    // Close the modal
+    closeModal('editProjectModal');
+    
+  } catch (err) {
+    console.log("Error updating project:", err);
+    alert("Failed to update project. Please try again.");
+  } finally {
+    saving.value = false;
+    projectToEdit.value = null;
+  }
+};
+
+// Handle project editing - redirecting is replaced with modal
+// const editProject = (project) => {
+//   openEditModal(project);
+// };
 
 // Open the delete confirmation modal
 const confirmDelete = (project) => {
   projectToDelete.value = project;
-  // Find the modal element
-  const modalElement = document.getElementById('deleteConfirmModal');
-  
-  // Display the modal
-  modalElement.classList.add('show');
-  modalElement.style.display = 'block';
-  document.body.classList.add('modal-open');
-  const backdrop = document.createElement('div');
-  backdrop.className = 'modal-backdrop fade show';
-  document.body.appendChild(backdrop);
+  openModal('deleteConfirmModal');
 };
 
 // Delete the project
@@ -196,22 +238,32 @@ const deleteProject = async () => {
     projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id);
     
     // Close the modal
-    closeModal();
-    
-    // Reset the project to delete
-    projectToDelete.value = null;
+    closeModal('deleteConfirmModal');
     
   } catch (err) {
     console.error("Error deleting project:", err);
     alert("Failed to delete project. Please try again.");
   } finally {
     deleting.value = false;
+    projectToDelete.value = null;
   }
 };
 
-// For handling Bootstrap modal backdrop issues
-const closeModal = () => {
-  const modalElement = document.getElementById('deleteConfirmModal');
+// Utility functions for handling modals
+const openModal = (modalId) => {
+  const modalElement = document.getElementById(modalId);
+  if (modalElement) {
+    modalElement.classList.add('show');
+    modalElement.style.display = 'block';
+    document.body.classList.add('modal-open');
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    document.body.appendChild(backdrop);
+  }
+};
+
+const closeModal = (modalId) => {
+  const modalElement = document.getElementById(modalId);
   if (modalElement) {
     modalElement.classList.remove('show');
     modalElement.style.display = 'none';
@@ -220,6 +272,13 @@ const closeModal = () => {
     if (backdrop) {
       backdrop.remove();
     }
+  }
+  
+  // Reset the appropriate ref based on which modal was closed
+  if (modalId === 'deleteConfirmModal') {
+    projectToDelete.value = null;
+  } else if (modalId === 'editProjectModal') {
+    projectToEdit.value = null;
   }
 };
 
@@ -238,6 +297,10 @@ onUnmounted(() => {
   if (unsubscribe) {
     unsubscribe();
   }
+  
+  // Ensure any open modals are closed
+  closeModal('deleteConfirmModal');
+  closeModal('editProjectModal');
 });
 </script>
   
