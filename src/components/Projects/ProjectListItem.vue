@@ -30,6 +30,7 @@
         <div class="d-flex align-items-center gap-2">
           <div v-if="isOwner" class="dropdown">
             <button class="btn btn-sm btn-outline-secondary" 
+            @click="(e)=>e.stopPropagation()"
               type="button" 
               data-bs-toggle="dropdown" 
               aria-expanded="false">
@@ -50,6 +51,7 @@
             :href="project.githubLink"
             target="_blank"
             class="btn btn-sm btn-github"
+            @click="(e)=>e.stopPropagation()"
           >
             <i class="bi bi-github"></i> GitHub
           </a>
