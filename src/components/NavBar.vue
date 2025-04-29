@@ -1,154 +1,107 @@
 <template>
-  <nav class="navbar text-light ps-3 pe-1 sticky-top">
-    <div
-      class="d-flex align-items-center justify-content-between"
-      style="height: 100%; width: 100%"
-    >
-      <div
-        class="navbar-brand d-flex align-items-center me-5"
-        style="color: white; width: fit-content; font-weight: bold"
-        
-      >
-        <img
-          src="../assets/logo.png"
-          style="height: 30px; width: 30px"
-          alt=""
-          class="ms-3 me-3"
-        />
-        Dev Gate
+  <nav class="navbar navbar-dark bg-dark shadow-sm sticky-top border-bottom border-secondary">
+    <div class="container-fluid">
+      <!-- Brand -->
+      <div class="navbar-brand d-flex align-items-center">
+        <img src="../assets/logo.png" class="me-2" width="30" height="30" alt="Logo">
+        <span class="fw-bold">Dev Gate</span>
       </div>
-      <div class="nav-links d-flex gap-3 me-4">
-        <!-- <router-link to="/" exact-active-class="active-link" class="nav-link"
-          >Messaging</router-link
-        >
-        <router-link
-          to="/search"
-          exact-active-class="active-link"
-          class="nav-link"
-          >Search</router-link
-        > -->
+<ul class="navbar-nav d-flex flex-row me-3">
+          <li class="nav-item me-3">
+            <router-link to="/" exact-active-class="active" class="nav-link">Messaging</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/search" exact-active-class="active" class="nav-link">Search</router-link>
+          </li>
+        </ul>
+      <!-- Navigation content - always visible -->
+      <div class="d-flex">
+        <!-- Nav links (commented out in original, kept for reference) -->
         
-      </div>
-      <div
-        class="d-flex actions flex-row-reverse align-items-center"
-        style="width: fit-content; justify-content: space-around"
-      >
-        <router-link
-          class="d-flex align-items-center justify-content-center me-2 p-1 img-div"
-          style="border-radius: 50%; cursor: pointer;"
-          :to="{name: 'ProfilePage', params: {uid: auth.currentUser.uid}}"
 
-        >
-          <img
-            :src="props.profilePic ? profilePic : DefaultProfile"
-            style="
-              height: 40px;
-              width: 40px;
-              border-radius: 50%;
-              margin: 0;
-              object-fit: cover;
-              object-position: top center;
-              aspect-ratio: 1;
-            "
-            
-          />
-        </router-link>
-        <div
-          class="icon-div pt-1 pb-1 ps-2 pe-3 haha"
-          style="border-radius: 25px; font-size: 16px; margin-right: 12px"
-          @click="signOut(auth)"
-        >
-          <i class="material-icons" style="font-size: 28px">logout</i> Logout
+        <!-- User actions -->
+        <div class="d-flex align-items-center">
+          <!-- Logout button -->
+          <button
+            class="btn btn-outline-danger d-flex align-items-center me-3"
+            @click="signOut(auth)"
+          >
+            <i class="material-icons me-1" style="font-size: 18px">logout</i>
+            <span>Logout</span>
+          </button>
+
+          <!-- Profile image -->
+          <router-link
+            :to="{name: 'ProfilePage', params: {uid: auth.currentUser.uid}}"
+            class="profile-link"
+          >
+            <img
+              :src="props.profilePic ? profilePic : DefaultProfile"
+              class="profile-image rounded-circle border border-light"
+              alt="Profile"
+            />
+          </router-link>
         </div>
       </div>
     </div>
   </nav>
 </template>
- 
-
-
-
 
 <script setup>
 import { defineProps } from "vue";
 import DefaultProfile from "@/assets/default-profile.png";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebase-config";
+
 const props = defineProps({
   profilePic: String,
 });
 </script>
-    
-    
-    <style scoped>
+
+<style scoped>
 .navbar {
-  border-bottom: 0.001em ridge #fff;
-
   height: 60px;
-  padding: 0;
-  background-color: #202020;
 }
 
-.actions {
-  height: 100%;
-  padding: 4px;
+.profile-link {
+  transition: transform 0.2s;
 }
 
-.icon-div {
-  height: 80%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 50%;
-  cursor: pointer;
-  aspect-ratio: 1;
+.profile-link:hover {
+  transform: scale(1.05);
 }
 
-.icon-div:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+.profile-image {
+  height: 40px;
+  width: 40px;
+  object-fit: cover;
+  object-position: top center;
 }
 
-img {
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.img-div:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-.haha:hover {
-  background-color: rgba(255, 0, 0, 0.8);
-}
+/* Custom styling for active nav links and hover effect */
 .nav-link {
-  color: white;
-  text-decoration: none;
-  padding: 8px 12px;
   position: relative;
-  font-size: 1.1em;
-  line-height: 1;
+  transition: color 0.3s ease;
 }
 
-.nav-link:hover {
-  color: #ccccccb7;
-
-}
-
-.active-link::after {
+.nav-link::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  bottom: -3px;
   left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: rgb(155, 85, 202);
+  width: 0;
+  height: 2px;
+  background-color: #8a2be2; /* Purple color matching your original */
   border-radius: 1px;
-  transition: 0.3s ease;
-  
+  transition: width 0.3s ease;
 }
 
 .nav-link:hover::after {
-  transform: scaleX(0.5);
+  width: 100%;
 }
 
-
+.nav-link.active::after {
+  width: 100%;
+  background-color: #8a2be2;
+}
 </style>

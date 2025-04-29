@@ -2,23 +2,34 @@
   <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="text-accent heading">{{ pageTitle }}</h1>
-      <div class="btn-group view-toggle m-0">
-        <button
-          @click="displayMode = 'gallery'"
-          class="btn m-0"
-          :class="
-            displayMode === 'gallery' ? 'btn-accent' : 'btn-outline-accent'
-          "
+      <div class="d-flex align-items-center gap-3">
+        <!-- Add Project Button - Only visible to the owner -->
+        <button 
+          v-if="isOwner" 
+          class="btn btn-accent add-project-btn"
+          @click="openAddModal"
         >
-          <i class="bi bi-grid-3x3-gap"></i> Gallery
+          <i class="bi bi-plus-lg me-2"></i> Add Project
         </button>
-        <button
-          @click="displayMode = 'list'"
-          class="btn m-0"
-          :class="displayMode === 'list' ? 'btn-accent' : 'btn-outline-accent'"
-        >
-          <i class="bi bi-list-ul"></i> List
-        </button>
+        
+        <div class="btn-group view-toggle m-0">
+          <button
+            @click="displayMode = 'gallery'"
+            class="btn m-0"
+            :class="
+              displayMode === 'gallery' ? 'btn-accent' : 'btn-outline-accent'
+            "
+          >
+            <i class="bi bi-grid-3x3-gap"></i> Gallery
+          </button>
+          <button
+            @click="displayMode = 'list'"
+            class="btn m-0"
+            :class="displayMode === 'list' ? 'btn-accent' : 'btn-outline-accent'"
+          >
+            <i class="bi bi-list-ul"></i> List
+          </button>
+        </div>
       </div>
     </div>
 
@@ -37,6 +48,13 @@
     <div v-else-if="projects.length === 0" class="text-center py-5 empty-state">
       <i class="bi bi-folder-x display-1 text-muted"></i>
       <p class="mt-3">{{ isOwner ? "You don't have any projects yet." : "This user doesn't have any projects yet." }}</p>
+      <button 
+        v-if="isOwner"
+        class="btn btn-accent mt-3"
+        @click="openAddModal"
+      >
+        <i class="bi bi-plus-lg me-2"></i> Add Your First Project
+      </button>
     </div>
 
     <template v-else>
@@ -74,25 +92,34 @@
       @submit="saveProject"
       @close="closeModal('editProjectModal')"
     />
+
+    <!-- Add Project Modal -->
+    <AddProjectModal
+      ref="addProjectModalRef"
+      :saving="saving"
+      @submit="addProject"
+      @close="closeModal('addProjectModal')"
+    />
   </div>
 </template>
   
 <script setup>
 /* eslint-disable */
 import { ref, onMounted, onUnmounted } from "vue";
-import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
 import { db } from "@/firebase/firebase-config";
 import ProjectGallery from "@/components/Projects/ProjectGallery.vue";
 import ProjectList from "@/components/Projects/ProjectList.vue";
 import DeleteConfirmModal from "@/components/Projects/DeleteConfirmModal.vue";
 import EditProjectModal from "@/components/Projects/EditProjectModal.vue";
+import AddProjectModal from "@/components/Projects/AddProjectModal.vue";
 
 const auth = getAuth();
 const route = useRoute();
-const router = useRouter();
+
 
 const projects = ref([]);
 const loading = ref(true);
@@ -106,8 +133,9 @@ const profileUsername = ref("");
 const projectToDelete = ref(null);
 const deleting = ref(false);
 
-// New refs for edit functionality
+// New refs for edit and add functionality
 const projectToEdit = ref(null);
+const addProjectModalRef = ref(null);
 const saving = ref(false);
 
 // Check if the current user is the owner of the profile
@@ -175,6 +203,57 @@ const fetchProjects = async () => {
   }
 };
 
+// Open the add modal
+const openAddModal = () => {
+  // Reset form if ref is available
+  if (addProjectModalRef.value) {
+    addProjectModalRef.value.resetForm();
+  }
+  openModal('addProjectModal');
+};
+
+// Add new project
+const addProject = async (projectData) => {
+  if (!projectData || !isOwner.value) return;
+  
+  try {
+    saving.value = true;
+    
+    // Add the project to Firestore
+    const projectsRef = collection(db, "users", auth.currentUser.uid, "projects");
+    const docRef = await addDoc(projectsRef, {
+      title: projectData.title,
+      description: projectData.description,
+      icon: projectData.icon || '',
+      githubLink: projectData.githubLink || '',
+      stack: projectData.stack || [],
+      createdAt: new Date()
+    });
+    
+    // Add the project to the local array with the generated ID
+    const newProject = {
+      id: docRef.id,
+      title: projectData.title,
+      description: projectData.description,
+      icon: projectData.icon || '',
+      githubLink: projectData.githubLink || '',
+      stack: projectData.stack || [],
+      createdAt: new Date()
+    };
+    
+    projects.value.push(newProject);
+    
+    // Close the modal
+    closeModal('addProjectModal');
+    
+  } catch (err) {
+    console.error("Error adding project:", err);
+    alert("Failed to add project. Please try again.");
+  } finally {
+    saving.value = false;
+  }
+};
+
 // Open the edit modal
 const openEditModal = (project) => {
   projectToEdit.value = { ...project }; // Make a copy of the project
@@ -196,9 +275,7 @@ const saveProject = async (updatedProject) => {
     // Update the project in the local array
     const index = projects.value.findIndex(p => p.id === projectToEdit.value.id);
     if (index !== -1) {
-     
       projects.value[index] = { ...updatedProject };
-      
     }
     
     // Close the modal
@@ -212,11 +289,6 @@ const saveProject = async (updatedProject) => {
     projectToEdit.value = null;
   }
 };
-
-// Handle project editing - redirecting is replaced with modal
-// const editProject = (project) => {
-//   openEditModal(project);
-// };
 
 // Open the delete confirmation modal
 const confirmDelete = (project) => {
@@ -302,6 +374,7 @@ onUnmounted(() => {
   // Ensure any open modals are closed
   closeModal('deleteConfirmModal');
   closeModal('editProjectModal');
+  closeModal('addProjectModal');
 });
 </script>
   
@@ -414,6 +487,19 @@ onUnmounted(() => {
   padding: 1rem;
 }
 
+/* Add Project Button styling */
+.add-project-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.add-project-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(58, 134, 255, 0.25);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .heading {
@@ -421,6 +507,11 @@ onUnmounted(() => {
   }
 
   .view-toggle .btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  
+  .add-project-btn {
     padding: 6px 12px;
     font-size: 0.9rem;
   }
