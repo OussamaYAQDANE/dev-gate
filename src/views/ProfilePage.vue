@@ -83,7 +83,7 @@
       </div>
 
       <!-- Objectives Card -->
-      <div class="col-md-6 col-lg-3">
+      <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/objectives`)">
         <div class="card h-100 card-blue">
           <div class="card-header text-white fw-bold">
             <i class="bi bi-bullseye me-2"></i>Objectives
@@ -170,6 +170,7 @@ onMounted(async () => {
     isLoading.value = false;
   }
 });
+
 </script>
   
 <style scoped>

@@ -3,45 +3,37 @@
     import { auth, db } from '@/firebase/firebase-config';
     import { onAuthStateChanged } from 'firebase/auth';
     import { ref } from 'vue';
-    import { useRouter } from 'vue-router';
+    import { useRouter, useRoute } from 'vue-router';
     import { onSnapshot,doc,collection } from 'firebase/firestore';
     import ObjectiveCard from '@/components/ObjectiveCard.vue';
     
-    
-
+    const route = useRoute()
     const router = useRouter()
-    const currentUserId = ref('')
-    const currentUser = ref({})
+    const UserId = ref('')
+    const User = ref({})
     const objectives = ref([])
 
-
-    onAuthStateChanged(auth, (user)=>{
-        if (user){
-            currentUserId.value = user.uid;
-            getUser()
-            getObjectives()
-        }else{
-            router.push('/login')
-        }
-    })
+    UserId.value = route.params.uid;
 
     const getUser = ()=>{
-        const docRef = doc(db, "users", currentUserId.value)
+        const docRef = doc(db, "users", UserId.value)
         onSnapshot(docRef, (Snapshot)=>{
             if (Snapshot.data()){
-                currentUser.value = Snapshot.data()
+                User.value = Snapshot.data()
             }
         })
     }
+    getUser()
 
     const getObjectives = ()=>{
-        const docRef = collection(db,"users",currentUserId.value, "objectives")
+        const docRef = collection(db,"users",UserId.value, "objectives")
         onSnapshot(docRef, (SnapShot)=>{
             if (SnapShot && SnapShot.docs){
                 objectives.value = SnapShot.docs.map((doc)=>({id: doc.uid, ...doc.data()}))
             }
         }) 
     }
+    getObjectives()
 
 </script>
 

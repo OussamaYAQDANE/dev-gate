@@ -20,7 +20,7 @@ const routes = [
         component: ProfilePage
       },
       {
-        path: "objectives",
+        path: ":uid/objectives",
         component: ObjectivesPage
       },
       {
