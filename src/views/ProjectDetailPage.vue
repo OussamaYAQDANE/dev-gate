@@ -43,33 +43,6 @@
               </span>
             </div>
           </div>
-          <div class="ms-auto" v-if="isOwner">
-            <div class="dropdown">
-              <button
-                class="btn btn-outline-accent"
-                type="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i class="bi bi-three-dots-vertical"></i>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <button class="dropdown-item" @click="openEditModal(project)">
-                    <i class="bi bi-pencil me-2"></i> Edit
-                  </button>
-                </li>
-                <li>
-                  <button
-                    class="dropdown-item text-danger"
-                    @click="confirmDelete(project)"
-                  >
-                    <i class="bi bi-trash me-2"></i> Delete
-                  </button>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -121,7 +94,7 @@
                     </router-link>
                   </p>
                   <p class="mb-0" v-if="project.createdAt">
-                    <strong>Created:</strong>
+                    <strong>Added at:</strong>
                     {{ formatDate(project.createdAt) }}
                   </p>
                   <p class="mb-0" v-if="project.updatedAt">
@@ -135,42 +108,21 @@
         </div>
       </div>
     </div>
-
-    <!-- Delete Confirmation Modal -->
-    <DeleteConfirmModal
-      :project="projectToDelete"
-      :deleting="deleting"
-      @confirm="deleteProject"
-      @close="closeModal('deleteConfirmModal')"
-    />
-
-    <!-- Edit Project Modal -->
-    <EditProjectModal
-      :project="projectToEdit"
-      :saving="saving"
-      @submit="saveProject"
-      @close="closeModal('editProjectModal')"
-    />
   </div>
 </template>
   
-  <script setup>
+<script setup>
 import { ref, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import {
   doc,
   getDoc,
-  deleteDoc,
-  updateDoc,
   Timestamp,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "@/firebase/firebase-config";
-import DeleteConfirmModal from "@/components/Projects/DeleteConfirmModal.vue";
-import EditProjectModal from "@/components/Projects/EditProjectModal.vue";
 
 const route = useRoute();
-const router = useRouter();
 const auth = getAuth();
 
 // State variables
@@ -178,11 +130,6 @@ const project = ref(null);
 const owner = ref(null);
 const loading = ref(true);
 const error = ref(null);
-const isOwner = ref(false);
-const projectToDelete = ref(null);
-const projectToEdit = ref(null);
-const deleting = ref(false);
-const saving = ref(false);
 
 // Fetch project details based on route param
 const fetchProjectDetails = async () => {
@@ -199,11 +146,8 @@ const fetchProjectDetails = async () => {
     }
 
     // Determine which user's project collection to access
-    // First, try to get the project from current user's collection if authenticated
     let projectData = null;
     let projectOwnerUid = null;
-
-    // If we couldn't find the project and have a ownerUid query param, try that collection
 
     const ownerProjectRef = doc(
       db,
@@ -219,10 +163,6 @@ const fetchProjectDetails = async () => {
       projectOwnerUid = route.params.uid;
     }
 
-    // If we still couldn't find the project, we might need to search through all users
-    // This is not ideal for production but could work for a small application
-    // For a production app, you'd want to store projects in a central collection with owner references
-
     if (!projectData) {
       error.value = "Project not found";
       loading.value = false;
@@ -232,10 +172,6 @@ const fetchProjectDetails = async () => {
     // Add owner info to the project
     projectData.ownerUid = projectOwnerUid;
     project.value = projectData;
-
-    // Check if current user is the owner
-    isOwner.value =
-      auth.currentUser && auth.currentUser.uid === projectOwnerUid;
 
     // Fetch owner details
     if (projectOwnerUid) {
@@ -271,114 +207,6 @@ const formatDate = (timestamp) => {
   }).format(date);
 };
 
-// Edit project functions
-const openEditModal = (project) => {
-  projectToEdit.value = { ...project };
-  openModal("editProjectModal");
-};
-
-const saveProject = async (updatedProject) => {
-  if (!updatedProject || !isOwner.value) return;
-
-  try {
-    saving.value = true;
-    // Update with current timestamp
-    updatedProject.updatedAt = new Date();
-
-    // Update the project in Firestore
-    const projectRef = doc(
-      db,
-      "users",
-      auth.currentUser.uid,
-      "projects",
-      updatedProject.id
-    );
-    // Remove the id field before updating
-    /* eslint-disable */
-    const { id, ownerUid, ...projectData } = updatedProject;
-    await updateDoc(projectRef, projectData);
-
-    // Update the local project data
-    project.value = { ...updatedProject };
-
-    // Close the modal
-    closeModal("editProjectModal");
-  } catch (err) {
-    console.error("Error updating project:", err);
-    alert("Failed to update project. Please try again.");
-  } finally {
-    saving.value = false;
-    projectToEdit.value = null;
-  }
-};
-
-// Delete project functions
-const confirmDelete = (projectToDelete) => {
-  projectToDelete.value = projectToDelete;
-  openModal("deleteConfirmModal");
-};
-
-const deleteProject = async () => {
-  if (!projectToDelete.value || !isOwner.value) return;
-
-  try {
-    deleting.value = true;
-
-    await deleteDoc(
-      doc(
-        db,
-        "users",
-        auth.currentUser.uid,
-        "projects",
-        projectToDelete.value.id
-      )
-    );
-
-    // Navigate to projects page after deletion
-    router.push("/projects");
-  } catch (err) {
-    console.error("Error deleting project:", err);
-    alert("Failed to delete project. Please try again.");
-  } finally {
-    deleting.value = false;
-    projectToDelete.value = null;
-    closeModal("deleteConfirmModal");
-  }
-};
-
-// Modal utility functions
-const openModal = (modalId) => {
-  const modalElement = document.getElementById(modalId);
-  if (modalElement) {
-    modalElement.classList.add("show");
-    modalElement.style.display = "block";
-    document.body.classList.add("modal-open");
-    const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop fade show";
-    document.body.appendChild(backdrop);
-  }
-};
-
-const closeModal = (modalId) => {
-  const modalElement = document.getElementById(modalId);
-  if (modalElement) {
-    modalElement.classList.remove("show");
-    modalElement.style.display = "none";
-    document.body.classList.remove("modal-open");
-    const backdrop = document.querySelector(".modal-backdrop");
-    if (backdrop) {
-      backdrop.remove();
-    }
-  }
-
-  // Reset the appropriate ref based on which modal was closed
-  if (modalId === "deleteConfirmModal") {
-    projectToDelete.value = null;
-  } else if (modalId === "editProjectModal") {
-    projectToEdit.value = null;
-  }
-};
-
 let unsubscribe;
 
 onMounted(() => {
@@ -393,14 +221,10 @@ onUnmounted(() => {
   if (unsubscribe) {
     unsubscribe();
   }
-
-  // Ensure any open modals are closed
-  closeModal("deleteConfirmModal");
-  closeModal("editProjectModal");
 });
 </script>
   
-  <style scoped>
+<style scoped>
 /* Bootstrap icons */
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
 
@@ -476,33 +300,6 @@ onUnmounted(() => {
 .tech-badge:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.btn-accent {
-  background: linear-gradient(145deg, var(--accent-color), var(--accent-hover));
-  color: white;
-  border: none;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.btn-accent:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-  color: white;
-}
-
-.btn-outline-accent {
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-  background: transparent;
-  transition: all 0.3s ease;
-}
-
-.btn-outline-accent:hover {
-  background: var(--accent-light);
-  color: var(--accent-color);
-  transform: translateY(-2px);
 }
 
 .btn-github {
