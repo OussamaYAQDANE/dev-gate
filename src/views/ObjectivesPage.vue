@@ -4,14 +4,16 @@
     import { onAuthStateChanged } from 'firebase/auth';
     import { ref } from 'vue';
     import { useRouter, useRoute } from 'vue-router';
-    import { onSnapshot,doc,collection } from 'firebase/firestore';
+    import { onSnapshot,doc,collection, addDoc } from 'firebase/firestore';
     import ObjectiveCard from '@/components/ObjectiveCard.vue';
+    import AddObjective from '@/components/AddObjective.vue';
     
     const route = useRoute()
     const router = useRouter()
     const UserId = ref('')
     const User = ref({})
     const objectives = ref([])
+    const showModelAdd = ref(false);
 
     UserId.value = route.params.uid;
 
@@ -35,6 +37,14 @@
     }
     getObjectives()
 
+    const hideAddPost = ()=>{ showModelAdd.value = false}
+    const showAddPost = ()=>{ showModelAdd.value = true}
+    const handleAdd = async (newObj)=>{
+        const docRef = collection(db,"users",UserId.value, "objectives")
+        await addDoc(docRef, newObj)
+        showModelAdd.value = false
+    }
+
 </script>
 
 
@@ -42,7 +52,7 @@
     <div class="objectives-page">
         <h1 class="page-title">OBJECTIVES</h1>
         <div class="search-filter">
-            <button>Add Task</button>
+            <button @click="showAddPost">Add Task</button>
             <input type="text" placeholder="Search...">
             <select>
                 <option value="Done">Done</option>
@@ -50,6 +60,9 @@
                 <option value="Not Started">Not Started</option>
             </select>
         </div>
+
+
+        <AddObjective v-if="showModelAdd" @cancel="hideAddPost" @addPost="handleAdd"/>
         <div class="objectives-grid">
             <ObjectiveCard v-for="x in objectives" :key="x.id" :objective="x"/>
         </div>
