@@ -63,7 +63,7 @@
                     @keyup.enter.prevent="addTech"
                   />
                   <button 
-                    class="btn btn-outline-secondary" 
+                    class="btn btn-primary" 
                     type="button"
                     @click="addTech"
                   >
