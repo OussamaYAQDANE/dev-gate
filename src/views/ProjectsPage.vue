@@ -183,6 +183,7 @@ const openEditModal = (project) => {
 
 // Save the edited project
 const saveProject = async (updatedProject) => {
+  
   if (!updatedProject || !isOwner.value) return;
   
   try {
