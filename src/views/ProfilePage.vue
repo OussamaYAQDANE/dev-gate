@@ -64,7 +64,7 @@
       </div>
 
       <!-- Projects Card -->
-      <div class="col-md-6 col-lg-3" @click="$router.push(`/projects/${userRoute}`)">
+      <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/projects`)">
         <div class="card h-100 card-pink">
           <div class="card-header text-white fw-bold">
             <i class="bi bi-code-square me-2"></i>Projects

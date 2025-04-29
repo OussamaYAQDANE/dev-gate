@@ -14,11 +14,11 @@ const routes = [
     component: MainPage,
     children:[
       {
-        path: "profile/:uid", 
+        path: ":uid", 
         component: ProfilePage
       },
       {
-        path: "projects/:uid",
+        path: ":uid/projects",
         component: ProjectsPage
       }
     ]

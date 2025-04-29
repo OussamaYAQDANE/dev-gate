@@ -5,7 +5,7 @@ import { auth, db } from "../firebase/firebase-config"
 
 const generateDummyData = async () => {
     try {; // get current user
-      const userUid = auth.currentUser.uid; // get current user's UID
+      const userUid = "ihC4jtXMpzPui9LusMHaalEAd5q2"; // get current user's UID
   
       const projects = [
         {

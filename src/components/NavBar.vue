@@ -36,7 +36,7 @@
         <div
           class="d-flex align-items-center justify-content-center me-2 p-1 img-div"
           style="border-radius: 50%; cursor: pointer;"
-          @click="$router.push(`/profile/${auth.currentUser.uid}`)"
+          @click="$router.push(`${auth.currentUser.uid}`)"
 
         >
           <img
@@ -50,7 +50,7 @@
               object-position: top center;
               aspect-ratio: 1;
             "
-            @click="$router.push(`profile/${auth.currentUser.uid}`)"
+            
           />
         </div>
         <div
