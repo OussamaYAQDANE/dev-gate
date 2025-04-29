@@ -50,6 +50,7 @@
               object-position: top center;
               aspect-ratio: 1;
             "
+            @click="$router.push(`profile/${auth.currentUser.uid}`)"
           />
         </div>
         <div
