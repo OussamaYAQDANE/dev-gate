@@ -13,7 +13,7 @@ const routes = [
     name: 'home',
     component: MainPage,
     children:[
-      {
+      { name: "ProfilePage",
         path: ":uid", 
         component: ProfilePage
       },

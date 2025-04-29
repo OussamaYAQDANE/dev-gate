@@ -129,7 +129,7 @@
           <div class="d-flex gap-2 w-100 justify-content-between">
             <div>
               <h6 class="mb-0 project-title">{{ project.title }}</h6>
-              <p class="mb-0 opacity-75" style="color: #242424">
+              <p class="mb-0 opacity-75 list-text" style="color: #242424">
                 {{ project.description }}
               </p>
               <div class="mt-1">
@@ -619,6 +619,17 @@ onUnmounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 4;
   line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+
+}
+.list-text{
+ 
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
