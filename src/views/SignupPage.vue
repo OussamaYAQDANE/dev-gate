@@ -423,55 +423,6 @@ async function uploadProfile() {
   }
 }
 </script>
-  
-<style scoped>
-:root {
-  --text-primary: #000
-}
-</style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

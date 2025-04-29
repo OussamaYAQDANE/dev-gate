@@ -33,10 +33,10 @@
         class="d-flex actions flex-row-reverse align-items-center"
         style="width: fit-content; justify-content: space-around"
       >
-        <div
+        <router-link
           class="d-flex align-items-center justify-content-center me-2 p-1 img-div"
           style="border-radius: 50%; cursor: pointer;"
-          @click="$router.push(`/profile/${auth.currentUser.uid}`)"
+          :to="{name: 'ProfilePage', params: {uid: auth.currentUser.uid}}"
 
         >
           <img
@@ -50,8 +50,9 @@
               object-position: top center;
               aspect-ratio: 1;
             "
+            
           />
-        </div>
+        </router-link>
         <div
           class="icon-div pt-1 pb-1 ps-2 pe-3 haha"
           style="border-radius: 25px; font-size: 16px; margin-right: 12px"

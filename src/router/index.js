@@ -2,8 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
-import DashBoard from '@/views/DashBoard.vue'
+
 import ObjectivesPage from '@/views/ObjectivesPage.vue'
+import ProfilePage from '@/views/ProfilePage.vue'
+import ProjectsPage from '@/views/ProjectsPage.vue'
+
 
 
 const routes = [
@@ -12,13 +15,17 @@ const routes = [
     name: 'home',
     component: MainPage,
     children:[
-      {
-        path: "", 
-        component: DashBoard
+      { name: "ProfilePage",
+        path: ":uid", 
+        component: ProfilePage
       },
       {
         path: "objectives",
         component: ObjectivesPage
+      },
+      {
+        path: ":uid/projects",
+        component: ProjectsPage
       }
     ]
   },
