@@ -6,6 +6,7 @@ import MainPage from '@/views/MainPage.vue'
 import ObjectivesPage from '@/views/ObjectivesPage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
 import ProjectsPage from '@/views/ProjectsPage.vue'
+import ProjectDetailPage from '@/views/ProjectDetailPage.vue'
 
 
 
@@ -26,6 +27,10 @@ const routes = [
       {
         path: ":uid/projects",
         component: ProjectsPage
+      },
+      {
+        path: ":uid/projects/:pid",
+        component:ProjectDetailPage,
       }
     ]
   },

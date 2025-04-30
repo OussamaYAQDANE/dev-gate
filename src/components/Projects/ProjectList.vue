@@ -2,6 +2,7 @@
     <div class="list-group shadow-sm">
       <ProjectListItem
         v-for="project in projects"
+        @click="$router.push(`${$route.fullPath}/${project.id}`)"
         :key="project.id"
         :project="project"
         :is-owner="isOwner"
