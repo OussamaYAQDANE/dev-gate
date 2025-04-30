@@ -1,70 +1,121 @@
 <script setup>
-    /*  eslint-disable */
-    import { auth, db } from '@/firebase/firebase-config';
-    import { onAuthStateChanged } from 'firebase/auth';
-    import { ref } from 'vue';
-    import { useRouter, useRoute } from 'vue-router';
-    import { onSnapshot,doc,collection, addDoc } from 'firebase/firestore';
-    import ObjectiveCard from '@/components/ObjectiveCard.vue';
-    import AddObjective from '@/components/AddObjective.vue';
-    
-    const route = useRoute()
-    const router = useRouter()
-    const UserId = ref('')
-    const User = ref({})
-    const objectives = ref([])
-    const showModelAdd = ref(false);
+/*  eslint-disable */
+import { auth, db } from '@/firebase/firebase-config';
+import { onAuthStateChanged } from 'firebase/auth';
+import { ref, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import ObjectiveCard from '@/components/ObjectiveCard.vue';
+import AddObjective from '@/components/AddObjective.vue';
+import EditObjective from '@/components/EditObjective.vue';
+import ConfirmDeleteObj from '@/components/ConfirmDeleteObj.vue';
 
-    UserId.value = route.params.uid;
+const name_to_search = ref('')
+const type_to_search = ref('')
+const route = useRoute()
+const router = useRouter()
+const UserId = ref('')
+const User = ref({})
+const objectives = ref([])
+const showModelAdd = ref(false)
+const showModelEdit = ref(false)
+const showConfirm = ref(false)
+const ObjectiveToEditId = ref('')
+const ObjectiveToDelete = ref('')
 
-    const getUser = ()=>{
-        const docRef = doc(db, "users", UserId.value)
-        onSnapshot(docRef, (Snapshot)=>{
-            if (Snapshot.data()){
-                User.value = Snapshot.data()
-            }
-        })
-    }
-    getUser()
+UserId.value = route.params.uid;
 
-    const getObjectives = ()=>{
-        const docRef = collection(db,"users",UserId.value, "objectives")
-        onSnapshot(docRef, (SnapShot)=>{
-            if (SnapShot && SnapShot.docs){
-                objectives.value = SnapShot.docs.map((doc)=>({id: doc.uid, ...doc.data()}))
-            }
-        }) 
-    }
-    getObjectives()
+const getUser = ()=>{
+    const docRef = doc(db, "users", UserId.value)
+    onSnapshot(docRef, (Snapshot)=>{
+        if (Snapshot.data()){
+            User.value = Snapshot.data()
+        }
+    })
+}
+getUser()
 
-    const hideAddPost = ()=>{ showModelAdd.value = false}
-    const showAddPost = ()=>{ showModelAdd.value = true}
-    const handleAdd = async (newObj)=>{
-        const docRef = collection(db,"users",UserId.value, "objectives")
-        await addDoc(docRef, newObj)
-        showModelAdd.value = false
-    }
+const getObjectives = ()=>{
+    const docRef = collection(db,"users",UserId.value, "objectives")
+    onSnapshot(docRef, (SnapShot)=>{
+        if (SnapShot && SnapShot.docs){
+            objectives.value = SnapShot.docs.map((doc)=>({id: doc.id, ...doc.data()}))
+        }
+    }) 
+}
+getObjectives()
 
+const filteredObjectives = computed(() => {
+    return objectives.value.filter(obj => {
+        // Filter by name (case insensitive)
+        const nameMatch = obj.name.toLowerCase().includes(name_to_search.value.toLowerCase())
+        
+        // Filter by type (if type_to_search has a value)
+        const typeMatch = type_to_search.value === '' || 
+                          obj.status.toLowerCase() === type_to_search.value.toLowerCase()
+        
+        return nameMatch && typeMatch
+    })
+})
+
+const hideAddPost = ()=>{ showModelAdd.value = false}
+const showAddPost = ()=>{ showModelAdd.value = true}
+const hideEditPost = ()=>{showModelEdit.value = false}
+const hideConfirm = ()=>{ showConfirm.value = false}
+
+const handleAdd = async (newObj)=>{
+    const docRef = collection(db,"users",UserId.value, "objectives")
+    await addDoc(docRef, newObj)
+    showModelAdd.value = false
+}
+
+const showEditPost = (id)=>{
+    ObjectiveToEditId.value=id;
+    showModelEdit.value = true;
+}
+
+const showConfirmModel = (id)=>{
+    ObjectiveToDelete.value = id;
+    showConfirm.value = true;
+}
+
+const handleDelete = async ()=>{
+    showConfirm.value = false;
+    await deleteDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToDelete.value))
+}
+
+const handleEdit = async (newObj)=>{
+    showModelEdit.value = false;
+    await setDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToEditId.value),newObj)
+}
 </script>
-
 
 <template>
     <div class="objectives-page">
         <h1 class="page-title">OBJECTIVES</h1>
         <div class="search-filter">
             <button @click="showAddPost">Add Task</button>
-            <input type="text" placeholder="Search...">
-            <select>
-                <option value="Done">Done</option>
+            <input v-model="name_to_search" type="text" placeholder="Search...">
+            <select v-model="type_to_search">
+                <option value="">All Statuses</option>
+                <option value="complete">Done</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Not Started">Not Started</option>
             </select>
         </div>
 
-
         <AddObjective v-if="showModelAdd" @cancel="hideAddPost" @addPost="handleAdd"/>
+        <EditObjective v-if="showModelEdit" @cancel="hideEditPost" @editPost="handleEdit" :objectiveId="ObjectiveToEditId"/>
+        <ConfirmDeleteObj v-if="showConfirm" @cancel="hideConfirm" @confirmDelete="handleDelete"/>
+
         <div class="objectives-grid">
-            <ObjectiveCard v-for="x in objectives" :key="x.id" :objective="x"/>
+            <ObjectiveCard 
+                v-for="x in filteredObjectives" 
+                :key="x.id" 
+                :objective="x" 
+                @showConfirm="showConfirmModel(x.id)"  
+                @showEdit="showEditPost(x.id)"
+            />
         </div>
     </div>
 </template>

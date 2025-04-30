@@ -6,6 +6,7 @@
             type: Object,
         }
     }) 
+    
 
 
     const getStatusIcon = (status) => {
@@ -33,9 +34,14 @@
             </div>
             <div class="meta-info">
                 <span class="status">{{ props.objective.status }}</span>
-                <button class="edit-button">
-                    <i class="bi bi-pencil-fill"></i> Edit
-                </button>
+                <div class="button-group">
+                    <button class="edit-button" @click="$emit('showEdit')">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="delete-button" @click="$emit('showConfirm')">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -92,10 +98,13 @@
     font-style: italic;
 }
 
-.edit-button {
+.button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.edit-button, .delete-button {
     background-color: transparent;
-    color: #d275ff;
-    border: 1px solid #d275ff;
     border-radius: 5px;
     padding: 4px 10px;
     font-size: 0.8rem;
@@ -106,9 +115,25 @@
     gap: 5px;
 }
 
+.edit-button {
+    color: #d275ff;
+    border: 1px solid #d275ff;
+}
+
+.delete-button {
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+}
+
 .edit-button:hover {
     background-color: #d275ff;
     color: #1e1e1e;
     box-shadow: 0 0 10px rgba(210, 117, 255, 0.5);
+}
+
+.delete-button:hover {
+    background-color: #ff4d4d;
+    color: #1e1e1e;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
 }
 </style>
