@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
+
+import ObjectivesPage from '@/views/ObjectivesPage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
 import ProjectsPage from '@/views/ProjectsPage.vue'
 import ProjectDetailPage from '@/views/ProjectDetailPage.vue'
@@ -17,6 +19,10 @@ const routes = [
       { name: "ProfilePage",
         path: ":uid", 
         component: ProfilePage
+      },
+      {
+        path: ":uid/objectives",
+        component: ObjectivesPage
       },
       {
         path: ":uid/projects",
