@@ -44,12 +44,14 @@
 
     <h2 class="text-center mb-5 section-title">{{userData?.firstName}}'s Portfolio</h2>
 
-    <div class="row g-4">
+    <div class="row g-4" >
       <!-- Competences Card -->
-      <div class="col-md-6 col-lg-3">
+
+      <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/skills`)">
         <div class="card h-100 card-competences">
           <div class="card-body text-center">
             <h4 class="card-title">Competences</h4>
+
           </div>
         </div>
       </div>
