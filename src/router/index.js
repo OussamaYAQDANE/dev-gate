@@ -48,7 +48,7 @@ const routes = [
     component: SignupPage,
   },
   {
-    path:'/SearchPage',
+    path:'/search',
     name:"SearchPage",
     component:SearchPage
   }

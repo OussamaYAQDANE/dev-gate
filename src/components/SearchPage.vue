@@ -82,7 +82,7 @@
             where('username', '>=', usernameQuery.value),
             where('username', '<=', usernameQuery.value + '\uf8ff')
           );
-  
+          
           const querySnapshot = await getDocs(q);
           
           querySnapshot.forEach((doc) => {
@@ -94,7 +94,7 @@
   
         } catch (err) {
           console.error('Erreur de recherche:', err);
-          error.value = 'Une erreur est survenue lors de la recherche';
+          error.value = 'Une erreur est survenue lors de la recherche 1';
         } finally {
           loading.value = false;
         }
@@ -145,7 +145,7 @@
 
   } catch (err) {
     console.error('Erreur de recherche par compétence:', err);
-    error.value = 'Une erreur est survenue lors de la recherche';
+    error.value = 'Une erreur est survenue lors de la recherche 2';
   } finally {
     loading.value = false;
   }
@@ -161,7 +161,7 @@
   
       // Aller au profil utilisateur
       const goToProfile = (userId) => {
-        router.push(`/profile/${userId}`);
+        router.push(`${userId}`);
       };
       const handle = () => {
         searchByComp();
