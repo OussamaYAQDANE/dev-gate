@@ -21,12 +21,13 @@
         <!-- <router-link to="/" exact-active-class="active-link" class="nav-link"
           >Messaging</router-link
         >
+        -->
         <router-link
-          to="/search"
+          to="/searchPage"
           exact-active-class="active-link"
           class="nav-link"
           >Search</router-link
-        > -->
+        > 
         
       </div>
       <div

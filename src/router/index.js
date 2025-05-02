@@ -3,6 +3,7 @@ import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
 import DashBoard from '@/views/DashBoard.vue'
+import SearchPage from '../components/SearchPage.vue'
 
 
 
@@ -27,6 +28,11 @@ const routes = [
     path: '/signup',
     name: "Signup",
     component: SignupPage,
+  },
+  {
+    path:'/SearchPage',
+    name:"SearchPage",
+    component:SearchPage
   }
 ]
 
