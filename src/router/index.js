@@ -2,8 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
-import DashBoard from '@/views/DashBoard.vue'
+
 import SearchPage from '../components/SearchPage.vue'
+
+import ObjectivesPage from '@/views/ObjectivesPage.vue'
+import ProfilePage from '@/views/ProfilePage.vue'
+import ProjectsPage from '@/views/ProjectsPage.vue'
+import ProjectDetailPage from '@/views/ProjectDetailPage.vue'
+
 
 
 
@@ -13,9 +19,21 @@ const routes = [
     name: 'home',
     component: MainPage,
     children:[
+      { name: "ProfilePage",
+        path: ":uid", 
+        component: ProfilePage
+      },
       {
-        path: "", 
-        component: DashBoard
+        path: ":uid/objectives",
+        component: ObjectivesPage
+      },
+      {
+        path: ":uid/projects",
+        component: ProjectsPage
+      },
+      {
+        path: ":uid/projects/:pid",
+        component:ProjectDetailPage,
       }
     ]
   },
