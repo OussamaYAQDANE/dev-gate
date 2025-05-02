@@ -1,5 +1,24 @@
 <script setup>
     /* eslint-disable */
+    import { auth } from '@/firebase/firebase-config';
+    import { useRoute } from 'vue-router';
+    import { onAuthStateChanged } from 'firebase/auth';
+    import { ref } from 'vue';
+
+    const route = useRoute()
+    const UserActuel = ref('')
+    const user_Page = route.params.uid 
+    
+    
+
+
+    onAuthStateChanged(auth, (user)=>{
+        if (user){
+            UserActuel.value = user.uid;
+        }
+    })
+    
+
     import { defineProps } from 'vue';
     const props = defineProps({
         objective : {
@@ -20,6 +39,8 @@
                 return 'bi bi-circle text-secondary me-2';
         }
     };
+
+
 </script>
 
 <template>
@@ -35,10 +56,10 @@
             <div class="meta-info">
                 <span class="status">{{ props.objective.status }}</span>
                 <div class="button-group">
-                    <button class="edit-button" @click="$emit('showEdit')">
+                    <button v-if="user_Page == UserActuel" class="edit-button" @click="$emit('showEdit')">
                         <i class="bi bi-pencil-fill"></i>
                     </button>
-                    <button class="delete-button" @click="$emit('showConfirm')">
+                    <button v-if="user_Page == UserActuel" class="delete-button" @click="$emit('showConfirm')">
                         <i class="bi bi-trash-fill"></i>
                     </button>
                 </div>

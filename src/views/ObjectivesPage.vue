@@ -22,8 +22,13 @@ const showModelEdit = ref(false)
 const showConfirm = ref(false)
 const ObjectiveToEditId = ref('')
 const ObjectiveToDelete = ref('')
+const currentUser = ref('')
+
 
 UserId.value = route.params.uid;
+onAuthStateChanged(auth, (user)=>{
+    currentUser.value = user.uid;
+})
 
 const getUser = ()=>{
     const docRef = doc(db, "users", UserId.value)
@@ -64,9 +69,9 @@ const hideEditPost = ()=>{showModelEdit.value = false}
 const hideConfirm = ()=>{ showConfirm.value = false}
 
 const handleAdd = async (newObj)=>{
+    showModelAdd.value = false
     const docRef = collection(db,"users",UserId.value, "objectives")
     await addDoc(docRef, newObj)
-    showModelAdd.value = false
 }
 
 const showEditPost = (id)=>{
@@ -94,7 +99,7 @@ const handleEdit = async (newObj)=>{
     <div class="objectives-page">
         <h1 class="page-title">OBJECTIVES</h1>
         <div class="search-filter">
-            <button @click="showAddPost">Add Task</button>
+            <button v-if="currentUser == UserId" @click="showAddPost">Add Objective</button>
             <input v-model="name_to_search" type="text" placeholder="Search...">
             <select v-model="type_to_search">
                 <option value="">All Statuses</option>
