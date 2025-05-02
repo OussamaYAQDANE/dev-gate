@@ -128,7 +128,8 @@
       // On parcourt toutes les compétences de l'utilisateur
       compSnapshot.forEach((compDoc) => {
         // On vérifie si le nom de la compétence contient la compétence recherchée
-        if (compDoc.data().title.toLowerCase().includes(usernameQuery.value.toLowerCase())) {
+        
+        if (compDoc.data().name.toLowerCase().includes(usernameQuery.value.toLowerCase())) {
           foundCompetence = true;
         }
       });
@@ -138,7 +139,7 @@
         results.value.push({
           id: userDoc.id,
           ...userDoc.data(),
-          competences: compSnapshot.docs.map(doc => doc.data().title)
+          competences: compSnapshot.docs.map(doc => doc.data().name)
         });
       }
     }
