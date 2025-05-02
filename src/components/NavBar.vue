@@ -6,6 +6,7 @@
         <img src="../assets/logo.png" class="me-2" width="30" height="30" alt="Logo">
         <span class="fw-bold">Dev Gate</span>
       </div>
+
 <ul class="navbar-nav d-flex flex-row me-3">
           <li class="nav-item me-3">
             <router-link to="/" exact-active-class="active" class="nav-link">Messaging</router-link>
@@ -17,6 +18,7 @@
       <!-- Navigation content - always visible -->
       <div class="d-flex">
         <!-- Nav links (commented out in original, kept for reference) -->
+
         
 
         <!-- User actions -->
