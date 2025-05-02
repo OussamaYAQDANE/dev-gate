@@ -3,10 +3,13 @@ import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
 
+import SearchPage from '../components/SearchPage.vue'
+
 import ObjectivesPage from '@/views/ObjectivesPage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
 import ProjectsPage from '@/views/ProjectsPage.vue'
 import ProjectDetailPage from '@/views/ProjectDetailPage.vue'
+import ConpetensePage from '@/views/ConpetensePage.vue'
 
 
 
@@ -19,6 +22,10 @@ const routes = [
       { name: "ProfilePage",
         path: ":uid", 
         component: ProfilePage
+      },
+      {
+        path: ":uid/skills",
+        component: ConpetensePage
       },
       {
         path: ":uid/objectives",
@@ -34,6 +41,7 @@ const routes = [
       }
     ]
   },
+  
   {
     path: '/login',
     name: "Login",
@@ -43,6 +51,11 @@ const routes = [
     path: '/signup',
     name: "Signup",
     component: SignupPage,
+  },
+  {
+    path:'/search',
+    name:"SearchPage",
+    component:SearchPage
   }
 ]
 
