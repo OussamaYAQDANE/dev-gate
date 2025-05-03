@@ -36,7 +36,7 @@
       </div>
 
       <!-- Competence title -->
-      <h4 class="competence-title">Has acquired a new competence: {{ competence.title }}</h4>
+      <h4 class="competence-title"> {{(competence.progress? 'Progressed in: ': 'Has acquired a new competence: ')+ competence.title }}</h4>
       <p class="project-description">{{ competence.description }}</p>
 
       <!-- Interaction controls -->
