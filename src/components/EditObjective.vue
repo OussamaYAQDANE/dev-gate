@@ -1,7 +1,7 @@
 <script setup>
     /*  eslint-disable */
     import { db } from '@/firebase/firebase-config'
-    import { doc, getDoc } from 'firebase/firestore'
+    import { doc, getDoc, serverTimestamp } from 'firebase/firestore'
     import {ref} from 'vue'
     import { useRoute } from 'vue-router'
     import LoadingSpinner from './LoadingSpinner.vue'
@@ -24,7 +24,8 @@
         if (name_input.value && status_input.value){
             const newObj = {
                 name: name_input.value,
-                status: status_input.value
+                status: status_input.value,
+                createdAt: serverTimestamp()
             }
             emit('editPost', newObj)
         }

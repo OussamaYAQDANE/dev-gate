@@ -77,7 +77,7 @@
       </div>
 
       <!-- Timeline Card -->
-      <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/objectives`)">
+      <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/timeline`)">
         <div class="card h-100 card-timeline">
           <div class="card-body text-center">
             <h4 class="card-title">Timeline</h4>

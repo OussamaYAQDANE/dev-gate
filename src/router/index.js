@@ -10,7 +10,7 @@ import ProfilePage from '@/views/ProfilePage.vue'
 import ProjectsPage from '@/views/ProjectsPage.vue'
 import ProjectDetailPage from '@/views/ProjectDetailPage.vue'
 import ConpetensePage from '@/views/ConpetensePage.vue'
-
+import TimelinePage from '@/views/TimelinePage.vue'
 
 
 const routes = [
@@ -34,6 +34,10 @@ const routes = [
       {
         path: ":uid/projects",
         component: ProjectsPage
+      },
+      {
+        path: ":uid/timeline",
+        component: TimelinePage
       },
       {
         path: ":uid/projects/:pid",

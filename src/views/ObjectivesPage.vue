@@ -4,7 +4,7 @@ import { auth, db } from '@/firebase/firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import ObjectiveCard from '@/components/ObjectiveCard.vue';
 import AddObjective from '@/components/AddObjective.vue';
 import EditObjective from '@/components/EditObjective.vue';
@@ -71,7 +71,15 @@ const hideConfirm = ()=>{ showConfirm.value = false}
 const handleAdd = async (newObj)=>{
     showModelAdd.value = false
     const docRef = collection(db,"users",UserId.value, "objectives")
+    const activitiesRef = collection(db,"users",UserId.value, "activities")
     await addDoc(docRef, newObj)
+    const activity = {
+        time : newObj.createdAt,
+        type: "objective",
+        T1: `A new objective has been added : ${newObj.name}`,
+        T2: `${newObj.status}`
+    }
+    await addDoc(activitiesRef, activity)
 }
 
 const showEditPost = (id)=>{
@@ -91,7 +99,21 @@ const handleDelete = async ()=>{
 
 const handleEdit = async (newObj)=>{
     showModelEdit.value = false;
+    const SnapobjectveToEdit = await getDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToEditId.value))
+    const objectveToEdit = SnapobjectveToEdit.data()
+
     await setDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToEditId.value),newObj)
+    const activitiesRef = collection(db,"users",UserId.value, "activities")
+    if (objectveToEdit.status != newObj.status)
+    {
+        const activity = {
+            time : newObj.createdAt,
+            type: "objective",
+            T1: `Progress in the objective : ${newObj.name}`,
+            T2: `${newObj.status}`
+        }
+        await addDoc(activitiesRef, activity)
+    }
 }
 </script>
 
