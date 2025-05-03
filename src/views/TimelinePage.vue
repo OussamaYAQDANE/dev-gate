@@ -9,6 +9,8 @@ const userId = ref('');
 const TimeLine = ref([]);
 const route = useRoute();
 const loading = ref(true);
+const searchQuery = ref('');
+const selectedType = ref('all');
 
 userId.value = route.params.uid;
 
@@ -27,11 +29,22 @@ const formatDate = (timestamp) => {
   }).format(date);
 };
 
-// Group timeline items by date for display
+// Filter and group timeline items
+const filteredTimeline = computed(() => {
+  return TimeLine.value.filter(item => {
+    const matchesSearch = item.T1.toLowerCase().includes(searchQuery.value.toLowerCase()) || 
+                         (item.T2 && item.T2.toLowerCase().includes(searchQuery.value.toLowerCase()));
+    const matchesType = selectedType.value === 'all' || 
+                       item.type?.toLowerCase() === selectedType.value.toLowerCase();
+    return matchesSearch && matchesType;
+  });
+});
+
+// Group filtered timeline items by date
 const groupedTimeline = computed(() => {
   const grouped = {};
   
-  TimeLine.value.forEach(item => {
+  filteredTimeline.value.forEach(item => {
     const date = item.time?.toDate ? item.time.toDate() : new Date(item.time);
     const dateKey = date.toDateString();
     
@@ -45,7 +58,6 @@ const groupedTimeline = computed(() => {
     });
   });
   
-  // Convert to array and sort
   return Object.entries(grouped)
     .map(([date, items]) => ({ date, items }))
     .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -81,7 +93,6 @@ const getActivityColor = (type) => {
 
 async function getTimeLine() {
   try {
-    // Use query and orderBy to sort by time descending
     const timelineQuery = query(
       collection(db, 'users', userId.value, 'activities'),
       orderBy('time', 'desc')
@@ -107,6 +118,28 @@ getTimeLine();
   <div class="timeline-container">
     <h1 class="timeline-title">Activity Timeline</h1>
     
+    <div class="timeline-controls">
+      <div class="search-bar">
+        <i class="bi bi-search"></i>
+        <input 
+          v-model="searchQuery"
+          type="text" 
+          placeholder="Search activities..."
+          class="search-input"
+        >
+      </div>
+      
+      <div class="type-filter">
+        <select v-model="selectedType" class="filter-select">
+          <option value="all">All Types</option>
+          <option value="competence">Skills</option>
+          <option value="objective">Objectives</option>
+          <option value="project">Projects</option>
+        </select>
+        <i class="bi bi-chevron-down"></i>
+      </div>
+    </div>
+    
     <div v-if="loading" class="loading-container">
       <div class="spinner"></div>
       <p>Loading your timeline...</p>
@@ -118,6 +151,11 @@ getTimeLine();
     </div>
     
     <div v-else class="timeline">
+      <div v-if="filteredTimeline.length === 0" class="no-results">
+        <i class="bi bi-binoculars"></i>
+        <p>No activities match your search</p>
+      </div>
+      
       <div v-for="group in groupedTimeline" :key="group.date" class="timeline-group">
         <div class="timeline-date">
           <span>{{ new Date(group.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) }}</span>
@@ -148,7 +186,7 @@ getTimeLine();
               <div class="timeline-body">
                 <p class="primary-text">{{ activity.T1 }}</p>
                 <span class="activity-T2" :class="'T2-' + activity.T2.replace(/\s+/g, '-')">
-                     {{ activity.T2 }}
+                  {{ activity.T2 }}
                 </span>
               </div>
             </div>
@@ -158,6 +196,101 @@ getTimeLine();
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Add these new styles to your existing CSS */
+.timeline-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.search-bar {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar i {
+  position: absolute;
+  left: 12px;
+  color: var(--secondary-blue);
+  opacity: 0.7;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.type-filter {
+  position: relative;
+  min-width: 180px;
+}
+
+.type-filter i {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--secondary-blue);
+  opacity: 0.7;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 0.6rem 2rem 0.6rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--secondary-color);
+  text-align: center;
+}
+
+.no-results i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Keep all your existing styles below this point */
+/* ... */
+</style>
 
 <style scoped>
 .timeline-container {

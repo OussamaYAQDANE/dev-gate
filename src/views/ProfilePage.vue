@@ -86,6 +86,7 @@
       </div>
     </div>
   </div>
+  <LastActivities style="width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-left: 10px;"/>
 </template>
   
 <script setup>
@@ -94,6 +95,7 @@ import { useRoute } from 'vue-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"
+import LastActivities from '@/components/LastActivities.vue';
 
 const route = useRoute();
 const userRoute = route.params.uid;

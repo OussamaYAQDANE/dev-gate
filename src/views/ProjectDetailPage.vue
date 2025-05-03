@@ -112,6 +112,7 @@
 </template>
   
 <script setup>
+/* eslint-disable */
 import { ref, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import {
@@ -120,10 +121,10 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { db } from "@/firebase/firebase-config";
+import { db, auth } from "@/firebase/firebase-config";
 
 const route = useRoute();
-const auth = getAuth();
+// const auth = getAuth();
 
 // State variables
 const project = ref(null);
