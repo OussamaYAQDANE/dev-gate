@@ -225,6 +225,10 @@ const addProject = async (projectData) => {
       title: projectData.title,
       description: projectData.description,
       icon: projectData.icon || '',
+      stack: [],
+    upvoters: [auth.currentUser.uid],
+    downvoters: [],
+    authorId: auth.currentUser.uid,
       githubLink: projectData.githubLink || '',
       stack: projectData.stack || [],
       createdAt: new Date()

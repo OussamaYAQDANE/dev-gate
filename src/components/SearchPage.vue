@@ -2,23 +2,26 @@
   <div class="search-page py-5">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-outline-primary back-button" @click="goBack">
-          <i class="bi bi-arrow-left me-2"></i>Back
-        </button>
-        <h1 class="page-title section-title mb-0">Search Users</h1>
+        <h1 class="page-title section-title mb-0">Search</h1>
         <div class="spacer"></div> <!-- Empty element to balance the flexbox -->
       </div>
       
       <div class="search-options mb-3">
         <div class="btn-group w-100">
           <button 
-            @click="searchType = 'general'" 
-            :class="['btn', searchType === 'general' ? 'btn-primary' : 'btn-outline-primary']"
+            @click="setSearchType('users')" 
+            :class="['btn', searchType === 'users' ? 'btn-primary' : 'btn-outline-primary']"
           >
-            <i class="bi bi-person me-1"></i> Users & Skills
+            <i class="bi bi-person me-1"></i> Users
           </button>
           <button 
-            @click="searchType = 'projects'" 
+            @click="setSearchType('skills')" 
+            :class="['btn', searchType === 'skills' ? 'btn-primary' : 'btn-outline-primary']"
+          >
+            <i class="bi bi-stars me-1"></i> Skills
+          </button>
+          <button 
+            @click="setSearchType('projects')" 
             :class="['btn', searchType === 'projects' ? 'btn-primary' : 'btn-outline-primary']"
           >
             <i class="bi bi-code-square me-1"></i> Projects
@@ -30,7 +33,7 @@
         <input
           v-model="searchQuery"
           type="text"
-          :placeholder="searchType === 'general' ? 'Enter a username or skill...' : 'Enter a project title, technology or keyword...'"
+          :placeholder="getSearchPlaceholder()"
           class="form-control"
           @keyup.enter="handleSearch"
         />
@@ -51,7 +54,8 @@
 
       <div v-if="searchPerformed && results.length === 0 && !loading" class="no-results text-center p-4">
         <i class="bi bi-search me-2 fs-1 mb-3 d-block"></i>
-        <p class="lead" v-if="searchType === 'general'">No users found with this username or skill.</p>
+        <p class="lead" v-if="searchType === 'users'">No users found with this username.</p>
+        <p class="lead" v-else-if="searchType === 'skills'">No users found with this skill.</p>
         <p class="lead" v-else>No users found with matching projects.</p>
       </div>
 
@@ -80,6 +84,14 @@
                   <i class="bi bi-calendar me-1"></i> Member since {{ formatDate(user.createdAt) }}
                 </p>
                 
+                <!-- Show matched skill if this is a skill search -->
+                <div v-if="searchType === 'skills' && user.matchedSkill" class="matched-skill mt-2">
+                  <div class="skill-badge d-flex align-items-center">
+                    <i class="bi bi-stars me-1"></i>
+                    <span>{{ user.matchedSkill }}</span>
+                  </div>
+                </div>
+
                 <!-- Show matching project if this is a project search -->
                 <div v-if="searchType === 'projects' && user.matchedProject" class="matched-project mt-2">
                   <div class="project-badge d-flex align-items-center">
@@ -108,6 +120,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"; // Import default image
 
+
 export default {
   name: 'SearchPage',
   setup() {
@@ -117,15 +130,49 @@ export default {
     const loading = ref(false);
     const error = ref(null);
     const searchPerformed = ref(false);
-    const searchType = ref('general'); // 'general' for username/skills, 'projects' for projects
+    const searchType = ref('users'); // 'users', 'skills', or 'projects'
     
+    // Function to set search type and clear previous results
+    const setSearchType = (type) => {
+      if (searchType.value !== type) {
+        searchType.value = type;
+        results.value = [];
+        searchPerformed.value = false;
+        error.value = null;
+        searchQuery.value = ''; // Optional: clear the search query when changing type
+      }
+    };
+
+    // Get appropriate placeholder text based on search type
+    const getSearchPlaceholder = () => {
+      switch (searchType.value) {
+        case 'users':
+          return 'Enter a username...';
+        case 'skills':
+          return 'Enter a skill to find users...';
+        case 'projects':
+          return 'Enter a project title, technology or keyword...';
+        default:
+          return 'Search...';
+      }
+    };
+
     // Main search handler
     const handleSearch = async () => {
       if (!searchQuery.value.trim()) {
-        error.value = searchType.value === 'general' 
-          ? 'Please enter a username or skill' 
-          : 'Please enter a project title, technology, or keyword';
+        switch (searchType.value) {
+          case 'users':
+            error.value = 'Please enter a username';
+            break;
+          case 'skills':
+            error.value = 'Please enter a skill';
+            break;
+          case 'projects':
+            error.value = 'Please enter a project title, technology, or keyword';
+            break;
+        }
         return;
+
       }
 
       loading.value = true;
@@ -134,29 +181,20 @@ export default {
       searchPerformed.value = true;
 
       try {
-        if (searchType.value === 'general') {
-          // Search by username and skills
-          const usernameResults = await searchByUsername();
-          const skillResults = await searchByComp();
-          
-          // Combine results avoiding duplicates
-          const allResults = [...usernameResults];
-          
-          skillResults.forEach(skillUser => {
-            if (!allResults.some(user => user.id === skillUser.id)) {
-              allResults.push(skillUser);
-            }
-          });
-          
-          results.value = allResults;
-        } else {
-          // Search by projects
-          const projectResults = await searchByProjects();
-          results.value = projectResults;
+        switch (searchType.value) {
+          case 'users':
+            results.value = await searchByUsername();
+            break;
+          case 'skills':
+            results.value = await searchByComp();
+            break;
+          case 'projects':
+            results.value = await searchByProjects();
+            break;
         }
         
         // Log success to help with debugging
-        console.log(`Search completed successfully. Found ${results.value.length} results.`);
+        console.log(`Search completed successfully. Found ${results.value.length} results for ${searchType.value}.`);
         
       } catch (err) {
         console.error('Search error:', err);
@@ -171,7 +209,7 @@ export default {
       try {
         const usersRef = collection(db, 'users');
         
-        // Approche côté client pour une recherche plus flexible
+        // Client-side approach for more flexible searching
         const querySnapshot = await getDocs(usersRef);
         const userResults = [];
         const searchLower = searchQuery.value.toLowerCase();
@@ -211,28 +249,23 @@ export default {
             const compRef = collection(db, 'users', userDoc.id, 'competences');
             const compSnapshot = await getDocs(compRef);
 
-            let foundCompetence = false;
-            const userCompetences = [];
+            let matchedSkill = null;
 
             // Loop through all skills of the user
-            compSnapshot.forEach((compDoc) => {
+            for (const compDoc of compSnapshot.docs) {
               const compData = compDoc.data();
-              if (compData && compData.name) {
-                userCompetences.push(compData.name);
-                
-                // Check if skill name contains the searched skill
-                if (compData.name.toLowerCase().includes(searchLower)) {
-                  foundCompetence = true;
-                }
+              if (compData && compData.name && compData.name.toLowerCase().includes(searchLower)) {
+                matchedSkill = compData.name;
+                break;
               }
-            });
+            }
 
             // If a matching skill is found, add the user
-            if (foundCompetence) {
+            if (matchedSkill) {
               compResults.push({
                 id: userDoc.id,
                 ...userDoc.data(),
-                competences: userCompetences
+                matchedSkill: matchedSkill
               });
             }
           } catch (compErr) {
@@ -272,7 +305,7 @@ export default {
             for (const projectDoc of projectsSnapshot.docs) {
               const projectData = projectDoc.data();
               
-              // Vérifications de sécurité
+              // Safety checks
               if (!projectData) continue;
               
               // Check if project title contains the search query
@@ -300,7 +333,7 @@ export default {
                     ...userData,
                     matchedProject: {
                       ...projectData,
-                      id: projectDoc.id // Ajouter l'ID du projet pour référence
+                      id: projectDoc.id // Add project ID for reference
                     }
                   });
                 }
@@ -352,6 +385,8 @@ export default {
       loading,
       error,
       searchPerformed,
+      setSearchType,
+      getSearchPlaceholder,
       handleSearch,
       formatDate,
       goToProfile,
@@ -374,6 +409,7 @@ export default {
   --border-color: #3f3f3f;
   --error-color: #fa5252;
   --tech-bg: rgba(77, 171, 247, 0.15);
+  --skill-bg: rgba(77, 171, 247, 0.15);
   color: var(--text-color);
   background-color: var(--bg-color);
   min-height: 80vh;
@@ -583,14 +619,14 @@ export default {
 }
 
 /* Project matches */
-.matched-project {
+.matched-project, .matched-skill {
   background-color: rgba(77, 171, 247, 0.1);
   border-radius: 6px;
   padding: 0.5rem;
   margin-top: 0.75rem;
 }
 
-.project-badge {
+.project-badge, .skill-badge {
   color: var(--primary-color);
   font-weight: 500;
   font-size: 0.9rem;
