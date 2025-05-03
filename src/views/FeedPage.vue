@@ -43,7 +43,7 @@
           />
           
           <div v-if="projects.length > 0" class="load-more">
-            <button class="load-more-btn" @click="loadMoreProjects">
+            <button class="load-more-btn" @click="getProjects">
               Load More
             </button>
           </div>
@@ -80,13 +80,9 @@ import ProjectDiv from "@/components/Feed/ProjectDiv.vue";
 let lastDoc = null;
 const projects = ref([]);
 const activeView = ref('Projects');
-const sortBy = ref('Latest');
 const isLoading = ref(false);
 
-// Watch for changes in sort option
-watch(sortBy, () => {
-  resetFeed();
-});
+
 
 // Watch for changes in view
 watch(activeView, () => {
@@ -109,19 +105,17 @@ async function getProjects() {
   isLoading.value = true;
   try {
     // Determine sort field based on sortBy
-    const sortField = sortBy.value === 'Popular' ? 'upvoters' : 'createdAt';
-    const sortDirection = sortBy.value === 'Latest' ? 'desc' : 'asc';
     
     const q = lastDoc
       ? query(
           collectionGroup(db, "projects"),
-          orderBy(sortField, sortDirection),
+          orderBy("createdAt", "desc"),
           limit(10),
           startAfter(lastDoc)
         )
       : query(
           collectionGroup(db, "projects"),
-          orderBy(sortField, sortDirection),
+          orderBy("createdAt", "desc"),
           limit(10)
         );
         
@@ -143,11 +137,7 @@ async function getProjects() {
   }
 }
 
-function loadMoreProjects() {
-  if (activeView.value === 'Projects') {
-    getProjects();
-  }
-}
+
 
 function switchView(view) {
   activeView.value = view;

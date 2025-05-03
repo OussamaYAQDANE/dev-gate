@@ -408,9 +408,7 @@ getAuthorInfo();
     background: linear-gradient(145deg, #434343, #303030);
 }
 
-.github-link i {
-  margin-right: 5px;
-}
+
 
 .project-actions {
   display: flex;
