@@ -224,8 +224,7 @@ onMounted(async () => {
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-  border-color: rgba(255, 255, 255, 0.2);
+  
 }
 
 .card-body {

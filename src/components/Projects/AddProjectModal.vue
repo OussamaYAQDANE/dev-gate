@@ -119,7 +119,8 @@
   </template>
   
   <script setup>
-  import { reactive, ref, defineEmits, defineProps, defineExpose } from 'vue';
+  import { auth } from '@/firebase/firebase-config';
+import { reactive, ref, defineEmits, defineProps, defineExpose } from 'vue';
   
 defineProps({
     saving: {
@@ -136,7 +137,8 @@ defineProps({
     description: '',
     icon: '',
     githubLink: '',
-    stack: []
+
+    authorId: auth.currentUser.uid
   });
   
   async function handleSubmit() {
