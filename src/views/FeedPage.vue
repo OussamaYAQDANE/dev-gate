@@ -100,7 +100,7 @@ function resetFeed() {
 }
 
 async function getProjects() {
-  if (isLoading.value) return;
+  
   
   isLoading.value = true;
   try {
@@ -127,9 +127,9 @@ async function getProjects() {
     
     snapshot.docs.forEach((doc) => {
       projects.value.push({ id: doc.id, ...doc.data() });
+      lastDoc = doc;
     });
     
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
   } catch (error) {
     console.error("Error fetching projects:", error);
   } finally {
