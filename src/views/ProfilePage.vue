@@ -28,7 +28,7 @@
                 <p class="lead mb-0">{{ userData.bio }}</p>
               </div>
               <div class="profile-actions d-flex gap-2">
-                <a href="https://real-time-chat-7ab21.web.app/profile/9RsatumUNdWzKU7fq8N5TVPKe0g2">
+                <a href="https://real-time-chat-7ab21.web.app/search">
                   <button class="btn btn-primary">
                     <i class="bi bi-envelope-fill me-2"></i>Contact
                   </button>
@@ -77,7 +77,7 @@
       </div>
 
       <!-- Timeline Card -->
-      <div class="col-md-6 col-lg-3">
+      <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/objectives`)">
         <div class="card h-100 card-timeline">
           <div class="card-body text-center">
             <h4 class="card-title">Timeline</h4>
