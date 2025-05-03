@@ -2,9 +2,6 @@
   <div class="search-page py-5">
     <div class="container">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <button class="btn btn-outline-primary back-button" @click="goBack">
-          <i class="bi bi-arrow-left me-2"></i>Back
-        </button>
         <h1 class="page-title section-title mb-0">Search</h1>
         <div class="spacer"></div> <!-- Empty element to balance the flexbox -->
       </div>
@@ -123,6 +120,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"; // Import default image
 
+
 export default {
   name: 'SearchPage',
   setup() {
@@ -174,6 +172,7 @@ export default {
             break;
         }
         return;
+
       }
 
       loading.value = true;

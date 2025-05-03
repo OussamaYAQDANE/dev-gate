@@ -2,14 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from "@/views/LoginPage.vue"
 import SignupPage from '@/views/SignupPage.vue'
 import MainPage from '@/views/MainPage.vue'
-
 import SearchPage from '../components/SearchPage.vue'
-
 import ObjectivesPage from '@/views/ObjectivesPage.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
 import ProjectsPage from '@/views/ProjectsPage.vue'
 import ProjectDetailPage from '@/views/ProjectDetailPage.vue'
 import ConpetensePage from '@/views/ConpetensePage.vue'
+import FeedPage from '@/views/FeedPage.vue'
 
 
 
@@ -19,6 +18,11 @@ const routes = [
     name: 'home',
     component: MainPage,
     children:[
+      {
+        path:'/search',
+        name:"SearchPage",
+        component:SearchPage
+      },
       { name: "ProfilePage",
         path: ":uid", 
         component: ProfilePage
@@ -38,6 +42,10 @@ const routes = [
       {
         path: ":uid/projects/:pid",
         component:ProjectDetailPage,
+      },
+      {
+        path:'',
+        component: FeedPage
       }
     ]
   },
@@ -52,11 +60,6 @@ const routes = [
     name: "Signup",
     component: SignupPage,
   },
-  {
-    path:'/search',
-    name:"SearchPage",
-    component:SearchPage
-  }
 ]
 
 
