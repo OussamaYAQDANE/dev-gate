@@ -391,7 +391,7 @@ const addSkill = async () => {
       description: newSkill.value.description,
       level: newSkill.value.level,
       createdAt: serverTimestamp(),
-      upvoters: [],
+      upvoters: [auth.currentUser.uid],
       downvoters: [],
       authorId: auth.currentUser.uid
     });
@@ -480,6 +480,8 @@ const saveSkill = async () => {
     
     // Remove the id field before updating
     const { id, ...skillData } = skillToEdit.value;
+    skillData.createdAt = serverTimestamp();
+    skillData.progress = true;
     await updateDoc(skillRef, skillData);
     await updateDoc(userRef ,{
       [`num${skillData.level}`]: increment(1)
