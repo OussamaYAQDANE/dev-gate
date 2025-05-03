@@ -225,7 +225,8 @@
   
 <script setup>
 
-import { auth, db } from "@/firebase/firebase-config";
+import { auth, db, auth_chat, db_chat } from "@/firebase/firebase-config";
+
 import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
@@ -336,8 +337,24 @@ async function handleSubmit() {
       );
       const user = userCredentials.user;
 
+      const userCredentials_chat = await createUserWithEmailAndPassword(
+        auth_chat,
+        email.value,
+        password.value
+      );
+      const user_chat = userCredentials_chat.user;
+
+
       const docRef = doc(db, "users", user.uid);
       await setDoc(docRef, {
+        firstName: firstName.value,
+        lastName: lastName.value,
+        createdAt: serverTimestamp(),
+        username: username.value,
+      });
+
+      const docRef_chat = doc(db_chat, "users", user_chat.uid);
+      await setDoc(docRef_chat, {
         firstName: firstName.value,
         lastName: lastName.value,
         createdAt: serverTimestamp(),

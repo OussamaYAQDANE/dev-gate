@@ -110,14 +110,14 @@ import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc } from "
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute } from "vue-router";
 
-import { db } from "@/firebase/firebase-config";
+import { db,auth } from "@/firebase/firebase-config";
 import ProjectGallery from "@/components/Projects/ProjectGallery.vue";
 import ProjectList from "@/components/Projects/ProjectList.vue";
 import DeleteConfirmModal from "@/components/Projects/DeleteConfirmModal.vue";
 import EditProjectModal from "@/components/Projects/EditProjectModal.vue";
 import AddProjectModal from "@/components/Projects/AddProjectModal.vue";
 
-const auth = getAuth();
+// const auth = getAuth();
 const route = useRoute();
 
 
