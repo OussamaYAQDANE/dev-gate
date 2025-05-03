@@ -35,7 +35,7 @@
       </div>
 
       <!-- Project title and description -->
-      <h4 class="project-title">{{ project.title }}</h4>
+      <h4 class="project-title">Added a new project: {{ project.title }}</h4>
       <p class="project-description">{{ project.description }}</p>
 
       <!-- Project stack -->
