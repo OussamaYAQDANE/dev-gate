@@ -83,7 +83,9 @@
         </div>
       </div>
     </div>
+    <chartForCompetences/>
   </div>
+  
 </template>
   
 <script setup>
@@ -92,7 +94,7 @@ import { useRoute } from 'vue-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"
-
+import chartForCompetences from '@/components/chartForCompetences.vue';
 const route = useRoute();
 const userRoute = route.params.uid;
 const userData = ref(null);
