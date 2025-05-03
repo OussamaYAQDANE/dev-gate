@@ -137,9 +137,7 @@ defineProps({
     description: '',
     icon: '',
     githubLink: '',
-    stack: [],
-    upvoters: [auth.currentUser.uid],
-    downvoters: [],
+
     authorId: auth.currentUser.uid
   });
   
