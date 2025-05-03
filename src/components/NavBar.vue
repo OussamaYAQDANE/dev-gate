@@ -9,7 +9,7 @@
 
 <ul class="navbar-nav d-flex flex-row me-3">
           <li class="nav-item me-3">
-            <router-link to="/" exact-active-class="active" class="nav-link">Messaging</router-link>
+            <router-link to="/" exact-active-class="active" class="nav-link">Feed</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/search" exact-active-class="active" class="nav-link">Search</router-link>
