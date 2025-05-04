@@ -71,7 +71,7 @@
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/objectives`)">
         <div class="card h-100 card-objectives">
           <div class="card-body text-center">
-            <h4 class="card-title">Objectives</h4>
+            <h4 class="card-title">Objectives : {{ objectives.length }}</h4>
           </div>
         </div>
       </div>
@@ -86,22 +86,40 @@
       </div>
     </div>
     <chartForCompetences/>
-    <LastActivities style="width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
+    <div class="flex_horizental">
+      <LastActivities style="height: 100%;width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
+      <div class="objective_chart">
+        <ObjectivesChart style="width: 100%; height:100%" :objectives="objectives"/>
+      </div>
+    </div>
   </div>
 </template>
   
 <script setup>
+/*eslint-disable*/
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"
 import LastActivities from '@/components/LastActivities.vue';
+import ObjectivesChart from '@/components/ObjectivesChart.vue';
+
 
 const route = useRoute();
 const userRoute = route.params.uid;
 const userData = ref(null);
 const isLoading = ref(true);
+const objectives = ref([]);
+
+async function getObjectives(){
+  const docSnap = await getDocs(collection(db, "users", userRoute, "objectives"))
+  objectives.value = docSnap.docs.map((doc)=>({id:doc.id, ...doc.data()}))
+} 
+getObjectives()
+
+
+
 
 onMounted(async () => {
   try {
@@ -138,6 +156,22 @@ onMounted(async () => {
   --card-red: #fa5252;
   color: var(--text-color);
 }
+
+.flex_horizental{
+  display: flex;
+  flex-direction: row;
+  min-height: 470px;
+}
+
+.objective_chart{
+  display: inline-block;
+  background-color: rgba(0, 0, 0, 0.1);
+  height: auto;
+  width: 60%;
+  margin-top: 40px;
+  margin-left: 40px;
+}
+
 
 /* Profile section styles */
 .profile-section {

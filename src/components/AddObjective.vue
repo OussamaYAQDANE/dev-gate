@@ -38,9 +38,9 @@
                         <div class="form-group">
                             <label>Status: </label>
                             <select v-model="status_input">
-                                <option value="not Started">Not Started</option>
-                                <option value="in Progress">In Progress</option>
-                                <option value="complete">Done</option>
+                                <option value="not Started">not Started</option>
+                                <option value="in Progress">in Progress</option>
+                                <option value="complete">complete</option>
                             </select>
                         </div>
                     </form>
