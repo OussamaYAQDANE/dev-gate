@@ -106,7 +106,7 @@
 <script setup>
 /* eslint-disable */
 import { ref, onMounted, onUnmounted } from "vue";
-import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute } from "vue-router";
 
@@ -225,7 +225,6 @@ const addProject = async (projectData) => {
       title: projectData.title,
       description: projectData.description,
       icon: projectData.icon || '',
-      stack: [],
     upvoters: [auth.currentUser.uid],
     downvoters: [],
     authorId: auth.currentUser.uid,
@@ -233,6 +232,12 @@ const addProject = async (projectData) => {
       stack: projectData.stack || [],
       createdAt: new Date()
     });
+    addDoc(collection(db, "users", auth.currentUser.uid, "activities"), {
+      time: serverTimestamp(),
+      type: 'project',
+      T1: 'Added a new Project: ' + projectData.title,
+      T2: 'Stack used: ' + projectData.stack[0]+(projectData.stack[1]? ', '+projectData.stack[1] + '...': '...') 
+    })
     
     // Add the project to the local array with the generated ID
     const newProject = {
