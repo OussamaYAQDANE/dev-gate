@@ -82,7 +82,7 @@
             <h4 class="card-title">Timeline</h4>
           </div>
         </div>
-      </div>
+      </div> 
     </div>
     <div class="flex_horizental">
       <LastActivities style="height: 100%;width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
