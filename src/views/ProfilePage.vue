@@ -29,7 +29,7 @@
               </div>
               <div class="profile-actions d-flex gap-2">
                 <a href="https://real-time-chat-7ab21.web.app/search">
-                  <button class="btn btn-primary">
+                  <button class="btn btn-primary" v-if="userRoute != currentUser">
                     <i class="bi bi-envelope-fill me-2"></i>Contact
                   </button>
                 </a>
@@ -100,17 +100,18 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { db } from '@/firebase/firebase-config';
+import { db,auth } from '@/firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"
 import LastActivities from '@/components/LastActivities.vue';
 import ObjectivesChart from '@/components/ObjectivesChart.vue';
-
+import { onAuthStateChanged } from 'firebase/auth';
 
 const route = useRoute();
 const userRoute = route.params.uid;
 const userData = ref(null);
 const isLoading = ref(true);
 const objectives = ref([]);
+const currentUser = ref('')
 
 async function getObjectives(){
   const docSnap = await getDocs(collection(db, "users", userRoute, "objectives"))
@@ -118,6 +119,9 @@ async function getObjectives(){
 } 
 getObjectives()
 
+onAuthStateChanged(auth, (user)=>{
+    currentUser.value = user.uid;
+})
 
 
 
@@ -160,16 +164,17 @@ onMounted(async () => {
 .flex_horizental{
   display: flex;
   flex-direction: row;
-  min-height: 470px;
+  min-height: 450px;
 }
 
 .objective_chart{
   display: inline-block;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
   height: auto;
   width: 60%;
   margin-top: 40px;
   margin-left: 40px;
+  border-radius: 10px;
 }
 
 
