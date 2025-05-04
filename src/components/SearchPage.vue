@@ -254,8 +254,8 @@ export default {
             // Loop through all skills of the user
             for (const compDoc of compSnapshot.docs) {
               const compData = compDoc.data();
-              if (compData && compData.name && compData.name.toLowerCase().includes(searchLower)) {
-                matchedSkill = compData.name;
+              if (compData && compData.title && compData.title.toLowerCase().includes(searchLower)) {
+                matchedSkill = compData.title;
                 break;
               }
             }
