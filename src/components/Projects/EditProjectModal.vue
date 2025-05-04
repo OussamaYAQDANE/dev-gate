@@ -138,7 +138,6 @@ async function handleSubmit() {
   emit('submit', projectData)
 }
 
-// Create a reactive copy of the project data
 const projectData = reactive({
   title: '',
   description: '',
@@ -147,7 +146,6 @@ const projectData = reactive({
   stack: []
 });
 
-// Watch for changes in the project prop
 watch(() => props.project, (newProject) => {
   if (newProject) {
     projectData.title = newProject.title || '';
@@ -163,7 +161,6 @@ const imageInputRef = ref(null);
 const isUploading = ref(false);
 const uploadError = ref('');
 
-// Add new technology to the stack
 const addTech = () => {
   const tech = newTech.value.trim();
   if (tech && !projectData.stack.includes(tech)) {
@@ -172,18 +169,15 @@ const addTech = () => {
   }
 };
 
-// Remove technology from the stack
 const removeTech = (index) => {
   projectData.stack.splice(index, 1);
 };
 
-// Handle file selection
 const handleFileChange = () => {
   uploadError.value = '';
   uploadIcon()
 };
 
-// Upload icon to Cloudinary
 const uploadIcon = async () => {
   try {
     const file = imageInputRef.value.files[0];
@@ -195,13 +189,11 @@ const uploadIcon = async () => {
     
     isUploading.value = true;
     uploadError.value = '';
-    
-    // Create a FormData object to send the file to Cloudinary
+  
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'profilepics'); // Using the same preset as in the example
+    formData.append('upload_preset', 'profilepics');
     
-    // Upload to Cloudinary via their API
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/dshdjyc0h/image/upload`,
       {
@@ -256,7 +248,6 @@ const uploadIcon = async () => {
   display: inline-block;
 }
 
-/* Override Bootstrap's default modal styles for a modern look */
 :deep(.modal-content) {
   border-radius: 12px;
   border: none;

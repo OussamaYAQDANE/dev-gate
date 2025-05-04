@@ -30,6 +30,4 @@
   defineEmits(['edit', 'delete-confirm']);
   </script>
   
-  <style scoped>
-  /* No specific styles needed, inherits from parent */
-  </style>
+ 
