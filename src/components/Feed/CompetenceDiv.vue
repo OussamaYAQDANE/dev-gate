@@ -1,14 +1,13 @@
 <template>
   <div
-    class="project-card mb-3"
-    @click="$router.push(project.authorId + '/projects/' + project.id)"
+    class="competence-card mb-3"
   >
     <div v-if="isLoading" class="loading-container">
       <loading-spinner />
     </div>
-    <div v-else class="project-content">
+    <div v-else class="competence-content">
       <!-- Header with author info -->
-      <div class="project-header">
+      <div class="competence-header">
         <div class="author-info">
           <img
             :src="profilePic ? profilePic : defaultProfile"
@@ -21,41 +20,27 @@
               @click="
                 (e) => {
                   e.stopPropagation();
-                  $router.push(project.authorId);
+                  $router.push(competence.authorId);
                 }
               "
               >{{ fullName }}</span
             >
-            <span class="post-date">{{ getTimeAgo(project.createdAt) }}</span>
+            <span class="post-date">{{ getTimeAgo(competence.createdAt) }}</span>
           </div>
         </div>
-        <div v-if="project.icon" class="project-icon">
-          <i :class="project.icon"></i>
+        <div class="competence-level">
+          <span :class="'level-badge ' + competence.level.toLowerCase()">
+            {{ competence.level.substring(0,1).toUpperCase() + competence.level.substring(1) }}
+          </span>
         </div>
       </div>
 
-      <!-- Project title and description -->
-      <h4 class="project-title">Added a new project: {{ project.title }}</h4>
-      <p class="project-description">{{ project.description }}</p>
+      <!-- Competence title -->
+      <h4 class="competence-title"> {{(competence.progress? 'Progressed in: ': 'Has acquired a new competence: ')+ competence.title }}</h4>
+      <p class="project-description">{{ competence.description }}</p>
 
-      <!-- Project stack -->
-      <div v-if="project.stack && project.stack.length > 0" class="tech-stack">
-        <span
-          class="stack-item"
-          v-for="(tech, index) in project.stack"
-          :key="index"
-        >
-          {{ tech }}
-        </span>
-      </div>
-
-      <!-- Github link if available -->
-      <div
-        class="github-link d-flex flex-row justify-content-between align-items-center"
-      >
-        <button class="btn btn-sm github-link" target="_blank" >
-          <i class="bi bi-github"></i> View on GitHub
-        </button>
+      <!-- Interaction controls -->
+      <div class="github-link d-flex flex-row justify-content-end align-items-center mt-3">
         <div class="project-actions">
           <div class="btn-group">
             <div
@@ -93,7 +78,6 @@
                 align-items: center;
                 border-top-right-radius: 30px;
                 border-bottom-right-radius: 30px;
-
               "
               @click.stop="dislike()"
             >
@@ -108,13 +92,11 @@
           </div>
         </div>
       </div>
-
-      <!-- Interaction controls -->
     </div>
   </div>
 </template>
     
-  <script setup>
+<script setup>
 /* eslint-disable */
 import { ref, defineProps } from "vue";
 import getTimeAgo from "@/utilities/relativeTime";
@@ -132,18 +114,18 @@ import { auth, db } from "@/firebase/firebase-config";
 const rating = ref("neutral");
 const isLoading = ref(true);
 const props = defineProps({
-  project: Object,
+  competence: Object,
 });
 
 const profilePic = ref("");
 const likesCount = ref(
-  props.project.upvoters?.length - props.project.downvoters?.length || 0
+  props.competence.upvoters?.length - props.competence.downvoters?.length || 0
 );
 const fullName = ref("");
 
 async function getAuthorInfo() {
   try {
-    const snapDoc = await getDoc(doc(db, "users", props.project.authorId));
+    const snapDoc = await getDoc(doc(db, "users", props.competence.authorId));
     const userData = snapDoc.data();
     profilePic.value = userData?.profilePic || "";
     fullName.value =
@@ -152,13 +134,13 @@ async function getAuthorInfo() {
 
     if (auth.currentUser) {
       if (
-        props.project.upvoters?.some(
+        props.competence.upvoters?.some(
           (userId) => userId === auth.currentUser.uid
         )
       ) {
         rating.value = "liked";
       } else if (
-        props.project.downvoters?.some(
+        props.competence.downvoters?.some(
           (userId) => userId === auth.currentUser.uid
         )
       ) {
@@ -178,9 +160,9 @@ async function dislike() {
   const docRef = doc(
     db,
     "users",
-    props.project.authorId,
-    "projects",
-    props.project.id
+    props.competence.authorId,
+    "competences",
+    props.competence.id
   );
 
   if (rating.value === "disliked") {
@@ -230,9 +212,9 @@ async function like() {
   const docRef = doc(
     db,
     "users",
-    props.project.authorId,
-    "projects",
-    props.project.id
+    props.competence.authorId,
+    "competences",
+    props.competence.id
   );
 
   if (rating.value === "liked") {
@@ -279,8 +261,8 @@ async function like() {
 getAuthorInfo();
 </script>
     
-  <style scoped>
-.project-card {
+<style scoped>
+.competence-card {
   background-color: rgba(30, 35, 40, 0.6);
   border-radius: 8px;
   padding: 16px;
@@ -290,7 +272,7 @@ getAuthorInfo();
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.project-card:hover {
+.competence-card:hover {
   background-color: rgba(40, 45, 55, 0.8);
 }
 
@@ -301,7 +283,21 @@ getAuthorInfo();
   height: 200px;
 }
 
-.project-header {
+.project-description {
+  color: #b3cad5;
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+
+.competence-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -344,89 +340,57 @@ getAuthorInfo();
   color: #86a2ae;
   font-size: 0.8rem;
 }
-.upvotes {
-  font-size: 0.9em;
-}
-.project-icon {
-  color: #86a2ae;
-  font-size: 1.5rem;
+
+.competence-level {
+  display: flex;
+  align-items: center;
 }
 
-.project-title {
+.level-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+}
+
+.level-badge.beginner {
+  background-color: #4dabf7;
+}
+
+.level-badge.intermediate {
+  background-color: #38d9a9;
+}
+
+.level-badge.advanced {
+  background-color: #fcc419;
+}
+
+.level-badge.expert {
+  background-color: #ff6b6b;
+}
+
+.competence-title {
   font-weight: 700;
   margin-bottom: 8px;
   color: #ffffff;
   font-size: 1.25rem;
 }
 
-.project-description {
-  color: #b3cad5;
-  font-size: 0.95rem;
-  margin-bottom: 12px;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4;
+.upvotes {
+  font-size: 0.9em;
 }
-
-.tech-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.stack-item {
-  background: linear-gradient(145deg, #4dabf7, #4dabf7);
-  color: white;
-  border-radius: 6px;
-  padding: 5px 10px;
-  font-weight: 500;
-  font-size: 0.8rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-
-
-.github-link  button{
-    background: linear-gradient(145deg, #333, #222);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    padding: 6px 14px;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-    text-decoration: none;
-}
-
-.github-link button:hover {
-    background: linear-gradient(145deg, #434343, #303030);
-}
-
-
 
 .project-actions {
   display: flex;
   margin-top: 8px;
 }
 
-
-
-
-
-
-
 i {
   font-size: 1em;
   border-radius: 50%;
   padding: 10px;
 }
-
 
 .overlay i:hover {
   background-color: rgba(255, 255, 255, 0.3);
@@ -444,6 +408,7 @@ i {
 .disliked {
   background-color: red;
 }
+
 .neutral {
   background-color: rgba(255, 255, 255, 0.1);
 }

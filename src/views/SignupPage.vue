@@ -240,7 +240,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { ref } from "vue";
 import router from "@/router";
 import defaultProfile from "../assets/default-profile.png";
@@ -337,11 +337,16 @@ async function handleSubmit() {
       );
       const user = userCredentials.user;
 
+      // const idToken = await user.getIdToken();
+      // await signInWithCustomToken(auth_chat, idToken);
+
       const userCredentials_chat = await createUserWithEmailAndPassword(
         auth_chat,
         email.value,
         password.value
       );
+      await signInWithEmailAndPassword(auth_chat,email.value, password.value)
+
       const user_chat = userCredentials_chat.user;
 
 

@@ -21,20 +21,15 @@
               <i class="bi bi-award"></i> Competences
             </button>
           </div>
-          
-         
         </div>
       </div>
       
       <div class="feed-content">
         <!-- Projects View -->
         <div v-if="activeView === 'Projects'" class="projects-feed">
-          <div v-if="projects.length === 0" class="empty-state">
-            <div class="empty-state">
+          <div v-if="projects.length === 0 && !isLoading" class="empty-state">
             <i class="bi bi-tools"></i>
             <h4>No projects to show.</h4>
-            
-          </div>
           </div>
           <project-div
             v-for="project in projects"
@@ -51,10 +46,20 @@
         
         <!-- Competences View -->
         <div v-else class="competences-feed">
-          <div class="empty-state">
-            <i class="bi bi-tools"></i>
-            <h4>Competences Coming Soon</h4>
-            <p>This feature is still under development.</p>
+          <div v-if="competences.length === 0 && !isLoading" class="empty-state">
+            <i class="bi bi-award"></i>
+            <h4>No competences to show.</h4>
+          </div>
+          <competence-div
+            v-for="competence in competences"
+            :key="competence.id"
+            :competence="competence"
+          />
+          
+          <div v-if="competences.length > 0" class="load-more">
+            <button class="load-more-btn" @click="getCompetences">
+              Load More
+            </button>
           </div>
         </div>
       </div>
@@ -75,13 +80,15 @@ import {
   startAfter,
 } from "firebase/firestore";
 import ProjectDiv from "@/components/Feed/ProjectDiv.vue";
+import CompetenceDiv from "@/components/Feed/CompetenceDiv.vue";
 
 
-let lastDoc = null;
+let lastProjectDoc = null;
+let lastCompetenceDoc = null;
 const projects = ref([]);
+const competences = ref([]);
 const activeView = ref('Projects');
 const isLoading = ref(false);
-
 
 
 // Watch for changes in view
@@ -91,27 +98,26 @@ watch(activeView, () => {
 
 function resetFeed() {
   projects.value = [];
-  lastDoc = null;
+  competences.value = [];
+  lastProjectDoc = null;
+  lastCompetenceDoc = null;
   
   if (activeView.value === 'Projects') {
     getProjects();
+  } else {
+    getCompetences();
   }
-  // Implementation for competences would go here
 }
 
 async function getProjects() {
-  if (isLoading.value) return;
-  
   isLoading.value = true;
   try {
-    // Determine sort field based on sortBy
-    
-    const q = lastDoc
+    const q = lastProjectDoc
       ? query(
           collectionGroup(db, "projects"),
           orderBy("createdAt", "desc"),
           limit(10),
-          startAfter(lastDoc)
+          startAfter(lastProjectDoc)
         )
       : query(
           collectionGroup(db, "projects"),
@@ -127,9 +133,9 @@ async function getProjects() {
     
     snapshot.docs.forEach((doc) => {
       projects.value.push({ id: doc.id, ...doc.data() });
+      lastProjectDoc = doc;
     });
     
-    lastDoc = snapshot.docs[snapshot.docs.length - 1];
   } catch (error) {
     console.error("Error fetching projects:", error);
   } finally {
@@ -137,12 +143,44 @@ async function getProjects() {
   }
 }
 
-
+async function getCompetences() {
+  isLoading.value = true;
+  try {
+    const q = lastCompetenceDoc
+      ? query(
+          collectionGroup(db, "competences"),
+          orderBy("createdAt", "desc"),
+          limit(10),
+          startAfter(lastCompetenceDoc)
+        )
+      : query(
+          collectionGroup(db, "competences"),
+          orderBy("createdAt", "desc"),
+          limit(10)
+        );
+        
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+      return;
+    }
+    
+    snapshot.docs.forEach((doc) => {
+      competences.value.push({ id: doc.id, ...doc.data() });
+      console.log(doc.data());
+      lastCompetenceDoc = doc;
+    });
+    
+  } catch (error) {
+    console.error("Error fetching competences:", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 function switchView(view) {
   activeView.value = view;
 }
-
 
 // Initial data load
 getProjects();
@@ -212,48 +250,6 @@ getProjects();
   color: #ffffff;
 }
 
-.sort-options {
-  position: relative;
-}
-
-.sort-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #b3cad5;
-  border: none;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.sort-btn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
-}
-
-.dropdown-menu {
-  background-color: #1e252e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 4px;
-  min-width: 150px;
-}
-
-.dropdown-item {
-  color: #b3cad5;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-}
-
-.dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
 .feed-content {
   margin-top: 16px;
 }
@@ -320,15 +316,6 @@ getProjects();
   
   .view-btn {
     flex: 1;
-    justify-content: center;
-  }
-  
-  .sort-options {
-    width: 100%;
-  }
-  
-  .sort-btn {
-    width: 100%;
     justify-content: center;
   }
 }

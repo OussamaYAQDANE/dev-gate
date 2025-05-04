@@ -85,8 +85,9 @@
         </div>
       </div>
     </div>
+    <chartForCompetences/>
+    <LastActivities style="width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
   </div>
-  <LastActivities style="width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-left: 10px;"/>
 </template>
   
 <script setup>

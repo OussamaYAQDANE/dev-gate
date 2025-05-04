@@ -64,12 +64,9 @@
           <div class="skill-card">
             <div class="card-header d-flex align-items-center justify-content-between">
               <div class="d-flex align-items-center">
-                <img :src="skill.icon" alt="Skill icon" class="skill-icon me-3">
+               
                 <div>
                   <h5 class="skill-title mb-1">{{ skill.title }}</h5>
-                  <span class="skill-level" :class="`level-${skill.level.toLowerCase()}`">
-                    {{ skill.level }}
-                  </span>
                 </div>
               </div>
               <div v-if="isOwner" class="skill-actions">
@@ -83,6 +80,11 @@
             </div>
             <div class="card-body">
               <p class="skill-description">{{ skill.description }}</p>
+              <div>
+                <span class="skill-level" :class="`level-${skill.level.toLowerCase()}`">
+                      {{ skill.level }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -93,7 +95,7 @@
         <div v-for="skill in skills" :key="skill.id" class="skill-list-item">
           <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
-              <img :src="skill.icon" alt="Skill icon" class="skill-icon-sm me-3">
+              
               <div>
                 <h5 class="skill-title mb-1">{{ skill.title }}</h5>
                 <span class="skill-level" :class="`level-${skill.level.toLowerCase()}`">
@@ -176,16 +178,6 @@
                 ></textarea>
               </div>
               <div class="mb-3">
-                <label for="editIcon" class="form-label">Icon URL</label>
-                <input 
-                  type="url" 
-                  class="form-control" 
-                  id="editIcon" 
-                  v-model="skillToEdit.icon" 
-                  required
-                >
-              </div>
-              <div class="mb-3">
                 <label for="editLevel" class="form-label">Skill Level</label>
                 <select class="form-select" id="editLevel" v-model="skillToEdit.level" required>
                   <option value="beginner">Beginner</option>
@@ -243,16 +235,6 @@
                 ></textarea>
               </div>
               <div class="mb-3">
-                <label for="newIcon" class="form-label">Icon URL</label>
-                <input 
-                  type="url" 
-                  class="form-control" 
-                  id="newIcon" 
-                  v-model="newSkill.icon" 
-                  required
-                >
-              </div>
-              <div class="mb-3">
                 <label for="newLevel" class="form-label">Skill Level</label>
                 <select class="form-select" id="newLevel" v-model="newSkill.level" required>
                   <option value="beginner">Beginner</option>
@@ -261,20 +243,21 @@
                   <option value="expert">Expert</option>
                 </select>
               </div>
-            </form>
-          </div>
+            
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal('addSkillModal')">Cancel</button>
             <button 
-              type="button" 
+              type="submit" 
               class="btn btn-accent" 
-              @click="addSkill"
+              
               :disabled="saving"
             >
               <span v-if="saving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
               {{ saving ? 'Adding...' : 'Add Skill' }}
             </button>
           </div>
+        </form>
+      </div>
         </div>
       </div>
     </div>
@@ -283,8 +266,9 @@
 
 <script setup>
 /*eslint-disable*/
+
 import { ref, onMounted, onUnmounted } from "vue";
-import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc, serverTimestamp, increment } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute } from "vue-router";
 import { db,auth } from "@/firebase/firebase-config"; // Adjust the import path as needed
@@ -314,7 +298,6 @@ const saving = ref(false);
 const newSkill = ref({
   title: "",
   description: "",
-  icon: "",
   level: "beginner"
 });
 
@@ -390,7 +373,6 @@ const openAddModal = () => {
   newSkill.value = {
     title: "",
     description: "",
-    icon: "",
     level: "beginner"
   };
   openModal('addSkillModal');
@@ -408,17 +390,57 @@ const addSkill = async () => {
     const docRef = await addDoc(skillsRef, {
       title: newSkill.value.title,
       description: newSkill.value.description,
-      icon: newSkill.value.icon,
       level: newSkill.value.level,
-      createdAt: new Date()
+      createdAt: serverTimestamp(),
+      upvoters: [auth.currentUser.uid],
+      downvoters: [],
+      authorId: auth.currentUser.uid
     });
-    
+    const activityRef = collection(db, "users", auth.currentUser.uid, "activities");
+    const activity = await addDoc(activityRef, {
+      time: serverTimestamp(),
+      type: "skill",
+      T1: `Skill ${newSkill.value.title} has been added`,
+      T2: `Current level ${newSkill.value.level}`
+    })
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    if (newSkill.value.level=="beginner") {
+      const current = await getDoc(userRef)
+      if (current.exists){
+        const addTo = current.data().numbeginner || 0
+        await updateDoc(userRef, {
+        numbeginner: addTo+1
+      })}
+    }
+    if (newSkill.value.level=="intermediate") {
+      const current = await getDoc(userRef)
+      if (current.exists){
+        const addTo = current.data().numintermediate || 0
+        await updateDoc(userRef, {
+        numintermediate: addTo+1
+      })}
+    }
+    if (newSkill.value.level=="advanced") {
+      const current = await getDoc(userRef)
+      if (current.exists){
+        const addTo = current.data().numadvanced || 0
+        await updateDoc(userRef, {
+        numadvanced: addTo+1
+      })}
+    }
+    if (newSkill.value.level=="expert") {
+      const current = await getDoc(userRef)
+      if (current.exists){
+        const addTo = current.data().numexpert || 0
+        await updateDoc(userRef, {
+        numexpert: addTo+1
+      })}
+    }
     // Add the skill to the local array with the generated ID
     const newSkillWithId = {
       id: docRef.id,
       title: newSkill.value.title,
       description: newSkill.value.description,
-      icon: newSkill.value.icon,
       level: newSkill.value.level,
       createdAt: new Date()
     };
@@ -448,12 +470,32 @@ const saveSkill = async () => {
   
   try {
     saving.value = true;
-    // Update the skill in Firestore
+    const userRef = doc(db , "users", auth.currentUser.uid)
     const skillRef = doc(db, "users", auth.currentUser.uid, "competences", skillToEdit.value.id);
+    const oldSkill = await getDoc(skillRef)
+    const oldLevel = oldSkill.exists() ? oldSkill.data().level : 0
+    await updateDoc(userRef ,{
+      [`num${oldLevel}`]: increment(-1)
+    })
+    // Update the skill in Firestore
+    
     // Remove the id field before updating
     const { id, ...skillData } = skillToEdit.value;
+    skillData.createdAt = serverTimestamp();
+    skillData.progress = true;
     await updateDoc(skillRef, skillData);
-    
+    await updateDoc(userRef ,{
+      [`num${skillData.level}`]: increment(1)
+    })
+    if (oldLevel!=skillData.level){
+      const activityRef = collection(db, "users", auth.currentUser.uid, "activities");
+      const activity = await addDoc(activityRef, {
+      time: serverTimestamp(),
+      type: "skill",
+      T1: `Progression in '${skillToEdit.value.title}'`,
+      T2: `Current level ${skillData.level}`
+    })
+    }
     // Update the skill in the local array
     const index = skills.value.findIndex(s => s.id === id);
     if (index !== -1) {
@@ -483,11 +525,16 @@ const deleteSkill = async () => {
   
   try {
     deleting.value = true;
-    
+    const docc = doc(db, "users", auth.currentUser.uid, "competences", skillToDelete.value.id)
+    let level_to_decrement = await getDoc(docc)
+    level_to_decrement = level_to_decrement.data().level
     await deleteDoc(
-      doc(db, "users", auth.currentUser.uid, "competences", skillToDelete.value.id)
+      docc
     );
-    
+    const userRef = doc(db , "users", auth.currentUser.uid)
+    await updateDoc(userRef, {
+      [`num${level_to_decrement}`]: increment(-1)
+    })
     // Remove the skill from the local array
     skills.value = skills.value.filter(s => s.id !== skillToDelete.value.id);
     
@@ -559,6 +606,7 @@ onUnmounted(() => {
 });
 </script>
 
+
 <style scoped>
 /* Bootstrap icons are needed for this component */
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
@@ -622,18 +670,7 @@ onUnmounted(() => {
   color: var(--bg-dark);
 }
 
-.btn-outline-accent {
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-  background: transparent;
-  transition: all 0.3s ease;
-}
 
-.btn-outline-accent:hover {
-  background: var(--accent-light);
-  color: var(--accent-color);
-  transform: translateY(-2px);
-}
 
 .btn-outline-danger {
   color: #ff6b6b;
@@ -702,22 +739,8 @@ onUnmounted(() => {
   box-shadow: 0 8px 15px rgba(100, 255, 218, 0.25);
 }
 
-/* Skill Card Styling */
-.skill-card {
-  background-color: var(--card-bg);
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  transition: all 0.3s ease;
-  height: 100%;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
 
-.skill-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  border-color: var(--primary-glow);
-}
+
 
 .card-header {
   background-color: rgba(30, 41, 59, 0.8);
@@ -725,78 +748,10 @@ onUnmounted(() => {
   padding: 1rem;
 }
 
-.skill-icon {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 4px;
-}
-
-.skill-icon-sm {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  border-radius: 6px;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 3px;
-}
-
-.skill-title {
-  color: var(--text-light);
-  font-weight: bold;
-  margin-bottom: 0.25rem;
-  font-size: 1.1rem;
-}
-
-.skill-description {
-  color: var(--text-light);
-  opacity: 0.8;
-  font-size: 0.9rem;
-}
-
-.skill-level {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: bold;
-  text-transform: capitalize;
-}
-
-.level-beginner {
-  background-color: var(--card-violet);
-  color: white;
-}
-
-.level-intermediate {
-  background-color: var(--card-pink);
-  color: white;
-}
-
-.level-advanced {
-  background-color: var(--card-blue);
-  color: white;
-}
-
-.level-expert {
-  background-color: var(--card-green);
-  color: white;
-}
-
 .card-body {
   padding: 1rem;
 }
 
-.skill-actions button {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
 /* List View Styling */
 .skills-list {
@@ -888,6 +843,110 @@ onUnmounted(() => {
   
   .skill-actions {
     margin-top: 0.5rem;
+  }
+}
+/* Skill Cards Styling */
+
+/* Overall card styling */
+.skill-card {
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  overflow: hidden;
+}
+
+.skill-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Card header */
+.card-header {
+  background-color: rgb(59, 59, 59);
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem;
+}
+
+
+
+/* Skill title */
+.skill-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #e0dddd;
+}
+
+/* Skill level badges */
+.skill-level {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.level-beginner {
+  background-color: #e6f7ff;
+  color: #0096c7;
+}
+
+.level-intermediate {
+  background-color: #e6f6e6;
+  color: #2c974b;
+}
+
+.level-advanced {
+  background-color: #fff3e6;
+  color: #f76707;
+}
+
+.level-expert {
+  background-color: #f5e6ff;
+  color: #9c36b5;
+}
+
+/* Card body */
+.card-body {
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.skill-description {
+  color: #e0dddd;
+  font-size: 0.9rem;
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+/* Button styling */
+.skill-actions .btn {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.btn-outline-accent {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+.btn-outline-accent:hover {
+  background-color: #6366f1;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  
+  .skill-title {
+    font-size: 1rem;
   }
 }
 </style>
