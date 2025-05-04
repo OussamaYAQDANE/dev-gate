@@ -124,15 +124,12 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "@/firebase/firebase-config";
 
 const route = useRoute();
-// const auth = getAuth();
 
-// State variables
 const project = ref(null);
 const owner = ref(null);
 const loading = ref(true);
 const error = ref(null);
 
-// Fetch project details based on route param
 const fetchProjectDetails = async () => {
   loading.value = true;
   error.value = null;
@@ -145,8 +142,6 @@ const fetchProjectDetails = async () => {
       loading.value = false;
       return;
     }
-
-    // Determine which user's project collection to access
     let projectData = null;
     let projectOwnerUid = null;
 
@@ -170,11 +165,9 @@ const fetchProjectDetails = async () => {
       return;
     }
 
-    // Add owner info to the project
     projectData.ownerUid = projectOwnerUid;
     project.value = projectData;
 
-    // Fetch owner details
     if (projectOwnerUid) {
       const ownerDoc = await getDoc(doc(db, "users", projectOwnerUid));
       if (ownerDoc.exists()) {
@@ -189,11 +182,9 @@ const fetchProjectDetails = async () => {
   }
 };
 
-// Format date function
 const formatDate = (timestamp) => {
   if (!timestamp) return "Unknown";
 
-  // Handle Firestore Timestamp objects
   const date =
     timestamp instanceof Timestamp
       ? timestamp.toDate()
@@ -211,14 +202,12 @@ const formatDate = (timestamp) => {
 let unsubscribe;
 
 onMounted(() => {
-  // Listen for auth state changes
   unsubscribe = onAuthStateChanged(auth, () => {
     fetchProjectDetails();
   });
 });
 
 onUnmounted(() => {
-  // Clean up the auth listener
   if (unsubscribe) {
     unsubscribe();
   }
@@ -226,10 +215,10 @@ onUnmounted(() => {
 </script>
   
 <style scoped>
-/* Bootstrap icons */
+
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
 
-/* Modern tech theme with glass morphism */
+
 .container {
   --accent-color: #3a86ff;
   --accent-hover: #2667cc;

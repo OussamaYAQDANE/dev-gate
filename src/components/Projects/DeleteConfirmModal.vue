@@ -38,6 +38,3 @@
   defineEmits(['confirm', 'close']);
   </script>
   
-  <style scoped>
-  /* Modal styles inherited from Bootstrap */
-  </style>

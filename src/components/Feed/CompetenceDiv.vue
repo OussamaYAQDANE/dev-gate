@@ -6,7 +6,7 @@
       <loading-spinner />
     </div>
     <div v-else class="competence-content">
-      <!-- Header with author info -->
+      
       <div class="competence-header">
         <div class="author-info">
           <img
@@ -35,11 +35,11 @@
         </div>
       </div>
 
-      <!-- Competence title -->
+      
       <h4 class="competence-title"> {{(competence.progress? 'Progressed in: ': 'Has acquired a new competence: ')+ competence.title }}</h4>
       <p class="project-description">{{ competence.description }}</p>
 
-      <!-- Interaction controls -->
+     
       <div class="github-link d-flex flex-row justify-content-end align-items-center mt-3">
         <div class="project-actions">
           <div class="btn-group">

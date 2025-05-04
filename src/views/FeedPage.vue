@@ -25,7 +25,6 @@
       </div>
       
       <div class="feed-content">
-        <!-- Projects View -->
         <div v-if="activeView === 'Projects'" class="projects-feed">
           <div v-if="projects.length === 0 && !isLoading" class="empty-state">
             <i class="bi bi-tools"></i>
@@ -43,8 +42,7 @@
             </button>
           </div>
         </div>
-        
-        <!-- Competences View -->
+
         <div v-else class="competences-feed">
           <div v-if="competences.length === 0 && !isLoading" class="empty-state">
             <i class="bi bi-award"></i>
@@ -91,7 +89,7 @@ const activeView = ref('Projects');
 const isLoading = ref(false);
 
 
-// Watch for changes in view
+
 watch(activeView, () => {
   resetFeed();
 });
@@ -182,7 +180,6 @@ function switchView(view) {
   activeView.value = view;
 }
 
-// Initial data load
 getProjects();
 </script>
     
@@ -303,7 +300,6 @@ getProjects();
   color: #ffffff;
 }
 
-/* Responsive adjustments */
 @media (max-width: 576px) {
   .feed-filters {
     flex-direction: column;

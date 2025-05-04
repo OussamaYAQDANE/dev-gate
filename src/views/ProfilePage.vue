@@ -1,6 +1,6 @@
 <template>
   <div class="container py-5">
-    <!-- User Profile Section -->
+    
     <div class="profile-section mb-5">
       <div class="row">
         <div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
@@ -47,7 +47,6 @@
     <h2 class="text-center mb-5 section-title">{{userData?.firstName}}'s Portfolio</h2>
 
     <div class="row g-4" >
-      <!-- Competences Card -->
 
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/skills`)">
         <div class="card h-100 card-competences">
@@ -57,7 +56,7 @@
         </div>
       </div>
 
-      <!-- Projects Card -->
+     
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/projects`)">
         <div class="card h-100 card-projects">
           <div class="card-body text-center">
@@ -66,16 +65,15 @@
         </div>
       </div>
 
-      <!-- Objectives Card -->
+    
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/objectives`)">
         <div class="card h-100 card-objectives">
           <div class="card-body text-center">
-            <h4 class="card-title">Objectives : {{ objectives.length }}</h4>
+            <h4 class="card-title">Objectives: {{ objectives.length }}</h4>
           </div>
         </div>
       </div>
 
-      <!-- Timeline Card -->
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/timeline`)">
         <div class="card h-100 card-timeline">
           <div class="card-body text-center">
@@ -84,6 +82,59 @@
         </div>
       </div>
     </div>
+    
+    <!-- Coding Hours Tracking Section -->
+    <div class="coding-hours-section my-5">
+      <h2 class="text-center mb-4 section-title">Coding Hours</h2>
+      <div class="row g-4">
+        <!-- Input form for coding hours - only visible to profile owner -->
+        <div v-if="isOwner" class="col-md-5">
+          <div class="card h-100 card-coding-hours">
+            <div class="card-body">
+              <h4 class="card-title mb-4 text-center">Record My Hours</h4>
+              <div class="mb-3">
+                <label for="hours" class="form-label">Hours coded today:</label>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="hours" 
+                  v-model="hoursToday" 
+                  min="0" 
+                  max="24" 
+                  step="0.5"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="date" class="form-label">Date:</label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  id="date" 
+                  v-model="selectedDate"
+                />
+              </div>
+              <button @click="saveHours" class="btn btn-primary w-100">
+                <i class="bi bi-save me-2"></i>Save
+              </button>
+              <div v-if="saveMessage" :class="['alert mt-3', messageStatus === 'success' ? 'alert-success' : 'alert-danger']" role="alert">
+                {{ saveMessage }}
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Chart for coding hours by day - centered if not owner -->
+        <div :class="isOwner ? 'col-md-7' : 'col-md-10 mx-auto'">
+          <div class="card h-100">
+            <div class="card-body">
+              <h4 class="card-title mb-4 text-center">Daily Coding Hours ({{ currentMonthName }})</h4>
+              <div class="coding-chart-container" ref="chartContainer" style="height: 300px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <div class="flex_horizental">
       <LastActivities style="min-height: 100%;width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
       <div class="objective_chart">
@@ -96,53 +147,270 @@
       <chartForCompetences/>
       <ChartForProgrression/>
     </div>
-</div>
+  </div>
 </template>
   
 <script setup>
 /*eslint-disable*/
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { db,auth } from '@/firebase/firebase-config';
-import DefaultProfile from "@/assets/default-profile.png"
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where } from 'firebase/firestore';
+import { db, auth } from '@/firebase/firebase-config';
+import DefaultProfile from "@/assets/default-profile.png";
 import LastActivities from '@/components/LastActivities.vue';
 import ObjectivesChart from '@/components/ObjectivesChart.vue';
 import { onAuthStateChanged } from 'firebase/auth';
+import Chart from 'chart.js/auto';
 
 import chartForCompetences from '@/components/chartForCompetences.vue';
 import ChartForProgrression from '@/components/chartForProgrression.vue';
+
 const route = useRoute();
 const userRoute = ref(route.params.uid);
 const userData = ref(null);
 const isLoading = ref(true);
 const objectives = ref([]);
-const currentUser = ref('')
+const currentUser = ref('');
+
+// Variables for coding hours section
+const hoursToday = ref(0);
+const selectedDate = ref(formatDate(new Date()));
+const saveMessage = ref('');
+const messageStatus = ref('');
+const chartContainer = ref(null);
+const chartInstance = ref(null);
+const codingHours = ref([]);
+const isOwner = ref(false);
+const currentMonth = ref(new Date().getMonth());
+const currentYear = ref(new Date().getFullYear());
+
+// Date formatting for date input
+function formatDate(date) {
+  const d = new Date(date);
+  let month = '' + (d.getMonth() + 1);
+  let day = '' + d.getDate();
+  const year = d.getFullYear();
+  
+  if (month.length < 2) month = '0' + month;
+  if (day.length < 2) day = '0' + day;
+  
+  return [year, month, day].join('-');
+}
+
+const currentMonthName = computed(() => {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return monthNames[currentMonth.value];
+});
 
 async function getObjectives(){
   const docSnap = await getDocs(collection(db, "users", userRoute.value, "objectives"))
   objectives.value = docSnap.docs.map((doc)=>({id:doc.id, ...doc.data()}))
 } 
-getObjectives()
 
-onAuthStateChanged(auth, (user)=>{
-    currentUser.value = user.uid;
-})
+// Fetch user's coding hours data
+const fetchCodingHours = async () => {
+  try {
+    const userRef = doc(db, "users", userRoute);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      if (userData.codingHours) {
+        codingHours.value = userData.codingHours;
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching coding hours:", error);
+  }
+};
 
+// Save coding hours
+const saveHours = async () => {
+  if (hoursToday.value < 0 || hoursToday.value > 24) {
+    saveMessage.value = "Please enter a value between 0 and 24 hours";
+    messageStatus.value = "error";
+    return;
+  }
+  
+  try {
+    const dateToSave = new Date(selectedDate.value);
+    const entry = {
+      date: dateToSave,
+      hours: parseFloat(hoursToday.value),
+      month: dateToSave.getMonth(),
+      year: dateToSave.getFullYear(),
+      timestamp: new Date()
+    };
+    
+    // Get user document
+    const userRef = doc(db, "users", userRoute);
+    const userDoc = await getDoc(userRef);
+    
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      let updatedHours = userData.codingHours || [];
+      
+      // Check if there's already an entry for this date
+      const existingEntryIndex = updatedHours.findIndex(item => 
+        item.date && new Date(item.date.seconds * 1000).toDateString() === dateToSave.toDateString()
+      );
+      
+      if (existingEntryIndex >= 0) {
+        // Update existing entry
+        updatedHours[existingEntryIndex].hours = entry.hours;
+        updatedHours[existingEntryIndex].timestamp = entry.timestamp;
+      } else {
+        // Add new entry
+        updatedHours.push(entry);
+      }
+      
+      // Update document
+      await updateDoc(userRef, {
+        codingHours: updatedHours
+      });
+      
+      // Update local data
+      codingHours.value = updatedHours;
+      renderCodingHoursChart();
+      
+      saveMessage.value = "Hours successfully recorded!";
+      messageStatus.value = "success";
+      
+      // Reset message after 3 seconds
+      setTimeout(() => {
+        saveMessage.value = "";
+      }, 3000);
+    }
+  } catch (error) {
+    console.error("Error saving hours:", error);
+    saveMessage.value = "Error saving hours";
+    messageStatus.value = "error";
+  }
+};
 
+// Prepare data for the chart - daily view for the current month
+const dailyChartData = computed(() => {
+  // Get number of days in current month
+  const daysInMonth = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+  const daysData = Array(daysInMonth).fill(0);
+  
+  codingHours.value.forEach(entry => {
+    const entryDate = entry.date instanceof Date ? 
+      entry.date : new Date(entry.date.seconds * 1000);
+    
+    if (entryDate.getMonth() === currentMonth.value && entryDate.getFullYear() === currentYear.value) {
+      const day = entryDate.getDate() - 1; // Arrays are 0-indexed
+      daysData[day] += entry.hours;
+    }
+  });
+  
+  return daysData;
+});
 
-let num_competence = ref(0)
+// Render daily coding hours chart
+const renderCodingHoursChart = () => {
+  if (chartInstance.value) {
+    chartInstance.value.destroy();
+  }
+  
+  if (chartContainer.value) {
+    const ctx = document.createElement('canvas');
+    chartContainer.value.innerHTML = '';
+    chartContainer.value.appendChild(ctx);
+    
+    // Create labels for days (1-31)
+    const daysInMonth = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
+    const dayLabels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
+    
+    chartInstance.value = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dayLabels,
+        datasets: [{
+          label: 'Coding Hours',
+          data: dailyChartData.value,
+          backgroundColor: 'rgba(77, 171, 247, 0.6)',
+          borderColor: 'rgba(77, 171, 247, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Total Hours',
+              color: '#e2e8f0'
+            },
+            ticks: {
+              color: '#e2e8f0'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Day',
+              color: '#e2e8f0'
+            },
+            ticks: {
+              color: '#e2e8f0'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#e2e8f0'
+            }
+          }
+        }
+      }
+    });
+  }
+};
+
+let num_competence = ref(0);
+
 onMounted(async () => {
   try {
     // Fetch user data from Firestore
     const userDoc = await getDoc(doc(db, "users", userRoute.value));
+
+    // Check if current user is the profile owner
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser.value = user.uid;
+        isOwner.value = (user.uid === route.params.uid);
+      }
+    });
+    
+
     if (userDoc.exists()) {
       userData.value = userDoc.data();
-      num_competence.value = (userDoc.data().numbeginner||0)+ (userDoc.data().numintermediate||0) + (userDoc.data().numexpert||0) + (userDoc.data().numadvanced||0)
-      console.log(num_competence, "ayaya")
+      num_competence.value = (userDoc.data().numbeginner||0) + 
+                             (userDoc.data().numintermediate||0) + 
+                             (userDoc.data().numexpert||0) + 
+                             (userDoc.data().numadvanced||0);
     } else {
       console.log("No such user document!");
     }
+    
+    // Fetch coding hours and generate chart
+    await fetchCodingHours();
+    renderCodingHoursChart();
+    
   } catch (error) {
     console.error("Error fetching user data:", error);
   } finally {
@@ -150,6 +418,7 @@ onMounted(async () => {
   }
 });
 
+getObjectives();
 </script>
   
 <style scoped>
@@ -166,6 +435,7 @@ onMounted(async () => {
   --card-green: #40c057;
   --card-yellow: #fcc419;  
   --card-red: #fa5252;
+  --card-purple: #ae3ec9;
   color: var(--text-color);
 }
 
@@ -186,7 +456,6 @@ onMounted(async () => {
 }
 
 
-/* Profile section styles */
 .profile-section {
   background-color: var(--card-bg);
   border-radius: 8px;
@@ -235,7 +504,7 @@ onMounted(async () => {
   border-color: var(--primary-color);
 }
 
-/* Section title styling */
+
 .section-title {
   color: var(--primary-color);
   font-weight: 600;
@@ -256,7 +525,7 @@ onMounted(async () => {
   opacity: 0.8;
 }
 
-/* Card styles */
+
 .card {
   border: none;
   border-radius: 8px;
@@ -265,6 +534,9 @@ onMounted(async () => {
   transition: all 0.3s ease;
   background-color: var(--card-bg);
   border: 1px solid var(--border-color);
+}
+
+.row .card {
   cursor: pointer;
   height: 160px;
   display: flex;
@@ -272,9 +544,8 @@ onMounted(async () => {
   justify-content: center;
 }
 
-.card:hover {
+.row .card:hover {
   transform: translateY(-5px);
-  
 }
 
 .card-body {
@@ -286,7 +557,7 @@ onMounted(async () => {
   margin-bottom: 0;
 }
 
-/* Color variations for cards */
+
 .card-competences {
   border-top: 4px solid var(--card-blue);
 }
@@ -303,10 +574,52 @@ onMounted(async () => {
   border-top: 4px solid var(--card-red);
 }
 
+
+.card-coding-hours {
+  border-left: 4px solid var(--card-purple);
+}
+
+/* Coding hours section styling */
+.coding-hours-section .card {
+  height: auto;
+  min-height: 400px;
+  cursor: default;
+}
+
+.coding-hours-section .card:hover {
+  transform: none;
+}
+
+.coding-chart-container {
+  width: 100%;
+  height: 300px;
+}
+
+.form-control {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.form-control:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary-color);
+  color: var(--text-color);
+  box-shadow: 0 0 0 0.25rem rgba(77, 171, 247, 0.25);
+}
+
+.form-label {
+  color: var(--text-color);
+}
+
 /* Responsive adjustments */
+
 @media (max-width: 767px) {
   .card {
     margin-bottom: 20px;
+  }
+  
+  .row .card {
     height: 120px;
   }
   
@@ -321,6 +634,10 @@ onMounted(async () => {
   
   .profile-section {
     padding: 1.5rem;
+  }
+  
+  .coding-hours-section .card {
+    min-height: 300px;
   }
 }
 </style>

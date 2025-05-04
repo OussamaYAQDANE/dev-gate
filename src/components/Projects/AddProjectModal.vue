@@ -131,7 +131,7 @@ defineProps({
   
   const emit = defineEmits(['submit', 'close']);
   
-  // Initialize empty project data
+  
   const projectData = reactive({
     title: '',
     description: '',
@@ -150,7 +150,7 @@ defineProps({
   const isUploading = ref(false);
   const uploadError = ref('');
   
-  // Add new technology to the stack
+
   const addTech = () => {
     const tech = newTech.value.trim();
     if (tech && !projectData.stack.includes(tech)) {
@@ -159,18 +159,18 @@ defineProps({
     }
   };
   
-  // Remove technology from the stack
+
   const removeTech = (index) => {
     projectData.stack.splice(index, 1);
   };
   
-  // Handle file selection
+  
   const handleFileChange = () => {
     uploadError.value = '';
     uploadIcon();
   };
   
-  // Upload icon to Cloudinary
+  
   const uploadIcon = async () => {
     try {
       const file = imageInputRef.value.files[0];
@@ -183,12 +183,10 @@ defineProps({
       isUploading.value = true;
       uploadError.value = '';
       
-      // Create a FormData object to send the file to Cloudinary
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', 'profilepics'); // Using the same preset as in the example
+      formData.append('upload_preset', 'profilepics');
       
-      // Upload to Cloudinary via their API
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/dshdjyc0h/image/upload`,
         {
@@ -212,7 +210,7 @@ defineProps({
     }
   };
   
-  // Reset form after closing
+  
   const resetForm = () => {
     projectData.title = '';
     projectData.description = '';
@@ -256,7 +254,7 @@ defineProps({
     display: inline-block;
   }
   
-  /* Override Bootstrap's default modal styles for a modern look */
+  
   :deep(.modal-content) {
     border-radius: 12px;
     border: none;
