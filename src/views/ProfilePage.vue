@@ -50,8 +50,7 @@
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/skills`)">
         <div class="card h-100 card-competences">
           <div class="card-body text-center">
-            <h4 class="card-title">Competences</h4>
-
+            <h4 class="card-title">Skills: {{ num_competence }}</h4>
           </div>
         </div>
       </div>
@@ -83,7 +82,11 @@
         </div>
       </div>
     </div>
-    <chartForCompetences/>
+    <br>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <chartForCompetences/>
+      <ChartForProgrression/>
+    </div>
   </div>
   
 </template>
@@ -95,18 +98,20 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebase-config';
 import DefaultProfile from "@/assets/default-profile.png"
 import chartForCompetences from '@/components/chartForCompetences.vue';
+import ChartForProgrression from '@/components/chartForProgrression.vue';
 const route = useRoute();
 const userRoute = route.params.uid;
 const userData = ref(null);
 const isLoading = ref(true);
-
+let num_competence = ref(0)
 onMounted(async () => {
   try {
     // Fetch user data from Firestore
     const userDoc = await getDoc(doc(db, "users", userRoute));
-    
     if (userDoc.exists()) {
       userData.value = userDoc.data();
+      num_competence.value = (userDoc.data().numbeginner||0)+ (userDoc.data().numintermediate||0) + (userDoc.data().numexpert||0) + (userDoc.data().numadvanced||0)
+      console.log(num_competence, "ayaya")
     } else {
       console.log("No such user document!");
     }

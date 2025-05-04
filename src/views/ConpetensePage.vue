@@ -103,8 +103,10 @@
                 </span>
               </div>
             </div>
-            <div class="d-flex skill-list-content">
+            <div>
               <p class="skill-description me-4 mb-0">{{ skill.description }}</p>
+            </div>
+            <div class="d-flex skill-list-content">
               <div v-if="isOwner" class="skill-actions">
                 <button class="btn btn-sm btn-outline-accent me-2" @click="openEditModal(skill)">
                   <i class="bi bi-pencil"></i>
@@ -913,7 +915,7 @@ onUnmounted(() => {
 
 .skill-description {
   color: #e0dddd;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   margin-bottom: 0;
   line-height: 1.5;
 }
