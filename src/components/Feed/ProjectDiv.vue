@@ -7,7 +7,7 @@
       <loading-spinner />
     </div>
     <div v-else class="project-content">
-      <!-- Header with author info -->
+      
       <div class="project-header">
         <div class="author-info">
           <img
@@ -34,11 +34,11 @@
         </div>
       </div>
 
-      <!-- Project title and description -->
+    
       <h4 class="project-title">Added a new project: {{ project.title }}</h4>
       <p class="project-description">{{ project.description }}</p>
 
-      <!-- Project stack -->
+     
       <div v-if="project.stack && project.stack.length > 0" class="tech-stack">
         <span
           class="stack-item"
@@ -49,7 +49,7 @@
         </span>
       </div>
 
-      <!-- Github link if available -->
+     
       <div
         class="github-link d-flex flex-row justify-content-between align-items-center"
       >
@@ -109,7 +109,7 @@
         </div>
       </div>
 
-      <!-- Interaction controls -->
+      
     </div>
   </div>
 </template>

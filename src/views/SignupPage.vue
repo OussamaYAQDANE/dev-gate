@@ -408,14 +408,12 @@ async function uploadProfile() {
       return;
     }
 
-    // Create a FormData object to send the file to Cloudinary
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'profilepics'); // Replace with your Cloudinary upload preset
-    
-    // Upload to Cloudinary via their API
+    formData.append('upload_preset', 'profilepics');
+ 
     const response = await fetch(
-      `https://api.cloudinary.com/v1_1/dshdjyc0h/image/upload`, // Replace with your Cloudinary cloud name
+      `https://api.cloudinary.com/v1_1/dshdjyc0h/image/upload`,
       {
         method: 'POST',
         body: formData
@@ -429,7 +427,6 @@ async function uploadProfile() {
     const data = await response.json();
     const downloadURL = data.secure_url;
 
-    // Update user profile in Firestore with the Cloudinary URL
     await setDoc(
       doc(db, "users", auth.currentUser.uid),
       { profilePic: downloadURL, bio: bio.value },
@@ -460,7 +457,7 @@ async function uploadProfile() {
 }
 
 .card {
-  background-color: #343a40; /* Dark card background */
+  background-color: #343a40;
   border: none;
   border-radius: 10px;
   max-width: 500px;
@@ -470,17 +467,17 @@ async function uploadProfile() {
 }
 
 .card-title {
-  color: #ffffff; /* White title text */
+  color: #ffffff;
 }
 
 .form-label {
-  color: #adb5bd; /* Light gray labels */
+  color: #adb5bd;
 }
 
 .form-control {
-  background-color: #495057; /* Dark input background */
-  border: 1px solid #6c757d; /* Slightly lighter border */
-  color: #ffffff; /* White text in inputs */
+  background-color: #495057; 
+  border: 1px solid #6c757d;
+  color: #ffffff; 
   position: relative;
 }
 p.text-primary {
@@ -488,7 +485,7 @@ p.text-primary {
 }
 
 .form-control::placeholder {
-  color: #adb5bd; /* Light gray placeholder */
+  color: #adb5bd; 
 }
 
 .form-control:focus {
