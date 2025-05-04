@@ -132,7 +132,7 @@ getTimeLine();
       <div class="type-filter">
         <select v-model="selectedType" class="filter-select">
           <option value="all">All Types</option>
-          <option value="competence">Skills</option>
+          <option value="skill">Skills</option>
           <option value="objective">Objectives</option>
           <option value="project">Projects</option>
         </select>

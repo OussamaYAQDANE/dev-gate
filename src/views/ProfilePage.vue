@@ -82,10 +82,10 @@
             <h4 class="card-title">Timeline</h4>
           </div>
         </div>
-      </div> 
+      </div>
     </div>
     <div class="flex_horizental">
-      <LastActivities style="height: 100%;width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
+      <LastActivities style="min-height: 100%;width: 40%; background-color: rgba(0, 0, 0, 0.2); margin-top: 40px;"/>
       <div class="objective_chart">
         <ObjectivesChart style="width: 100%; height:100%" :objectives="objectives"/>
       </div>
@@ -113,14 +113,14 @@ import { onAuthStateChanged } from 'firebase/auth';
 import chartForCompetences from '@/components/chartForCompetences.vue';
 import ChartForProgrression from '@/components/chartForProgrression.vue';
 const route = useRoute();
-const userRoute = route.params.uid;
+const userRoute = ref(route.params.uid);
 const userData = ref(null);
 const isLoading = ref(true);
 const objectives = ref([]);
 const currentUser = ref('')
 
 async function getObjectives(){
-  const docSnap = await getDocs(collection(db, "users", userRoute, "objectives"))
+  const docSnap = await getDocs(collection(db, "users", userRoute.value, "objectives"))
   objectives.value = docSnap.docs.map((doc)=>({id:doc.id, ...doc.data()}))
 } 
 getObjectives()
@@ -135,7 +135,7 @@ let num_competence = ref(0)
 onMounted(async () => {
   try {
     // Fetch user data from Firestore
-    const userDoc = await getDoc(doc(db, "users", userRoute));
+    const userDoc = await getDoc(doc(db, "users", userRoute.value));
     if (userDoc.exists()) {
       userData.value = userDoc.data();
       num_competence.value = (userDoc.data().numbeginner||0)+ (userDoc.data().numintermediate||0) + (userDoc.data().numexpert||0) + (userDoc.data().numadvanced||0)
