@@ -240,7 +240,7 @@ const addProject = async (projectData) => {
       type: 'project',
       T1: 'Added a new Project: ' + projectData.title,
       T2: 'Stack used: ' + projectData.stack[0]+(projectData.stack[1]? ', '+projectData.stack[1] + '...': '...') 
-
+    })
     updateDoc(doc(db, "users", auth.currentUser.uid), {
       projects_num: increment(1) 
 
