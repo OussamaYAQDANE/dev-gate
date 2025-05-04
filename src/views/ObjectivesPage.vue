@@ -4,7 +4,7 @@ import { auth, db } from '@/firebase/firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import ObjectiveCard from '@/components/ObjectiveCard.vue';
 import AddObjective from '@/components/AddObjective.vue';
 import EditObjective from '@/components/EditObjective.vue';
@@ -94,7 +94,19 @@ const showConfirmModel = (id)=>{
 
 const handleDelete = async ()=>{
     showConfirm.value = false;
+
+    const SnapobjectveToDelete = await getDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToDelete.value))
+    const objectveToDelete = SnapobjectveToDelete.data()
+    const activitiesRef = collection(db,"users",UserId.value, "activities")
+
     await deleteDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToDelete.value))
+    const activity = {
+            time : serverTimestamp(),
+            type: "objective",
+            T1: `Objective aborted: ${objectveToDelete.name}`,
+            T2: `${objectveToDelete.status}`
+        }
+    await addDoc(activitiesRef, activity)
 }
 
 const handleEdit = async (newObj)=>{
