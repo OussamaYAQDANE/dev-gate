@@ -3,7 +3,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="text-accent heading">{{ pageTitle }}</h1>
       <div class="d-flex align-items-center gap-3">
-        <!-- Add Skill Button - Only visible to the owner -->
+        
         <button 
           v-if="isOwner" 
           class="btn btn-accent add-skill-btn"
@@ -58,7 +58,7 @@
     </div>
 
     <template v-else>
-      <!-- Gallery View -->
+     
       <div v-if="displayMode === 'gallery'" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <div v-for="skill in skills" :key="skill.id" class="col">
           <div class="skill-card">
@@ -90,7 +90,6 @@
         </div>
       </div>
 
-      <!-- List View -->
       <div v-else class="skills-list">
         <div v-for="skill in skills" :key="skill.id" class="skill-list-item">
           <div class="d-flex align-items-center justify-content-between">
@@ -103,8 +102,10 @@
                 </span>
               </div>
             </div>
-            <div class="d-flex skill-list-content">
+            <div>
               <p class="skill-description me-4 mb-0">{{ skill.description }}</p>
+            </div>
+            <div class="d-flex skill-list-content">
               <div v-if="isOwner" class="skill-actions">
                 <button class="btn btn-sm btn-outline-accent me-2" @click="openEditModal(skill)">
                   <i class="bi bi-pencil"></i>
@@ -119,7 +120,6 @@
       </div>
     </template>
     
-    <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -147,7 +147,7 @@
       </div>
     </div>
     
-    <!-- Edit Skill Modal -->
+   
     <div class="modal fade" id="editSkillModal" tabindex="-1" aria-labelledby="editSkillModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -204,7 +204,7 @@
       </div>
     </div>
 
-    <!-- Add Skill Modal -->
+   
     <div class="modal fade" id="addSkillModal" tabindex="-1" aria-labelledby="addSkillModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -279,35 +279,32 @@ const route = useRoute();
 const skills = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const displayMode = ref("gallery"); // Default to gallery view
+const displayMode = ref("gallery"); 
 const pageTitle = ref("Skills");
 const isOwner = ref(false);
 const currentUserUid = ref(null);
 const profileUserUid = ref(route.params.uid);
 const profileUsername = ref("");
 
-// Refs for delete functionality
+
 const skillToDelete = ref(null);
 const deleting = ref(false);
 
-// Refs for edit functionality
 const skillToEdit = ref({});
 const saving = ref(false);
 
-// Ref for add functionality
+
 const newSkill = ref({
   title: "",
   description: "",
   level: "beginner"
 });
 
-// Check if the current user is the owner of the profile
 const checkOwnership = () => {
   if (auth.currentUser) {
     currentUserUid.value = auth.currentUser.uid;
     isOwner.value = currentUserUid.value === profileUserUid.value;
-    
-    // Set the page title based on ownership
+   
     if (isOwner.value) {
       pageTitle.value = "My Skills";
     } else {
@@ -319,7 +316,7 @@ const checkOwnership = () => {
   }
 };
 
-// Fetch the username of the profile owner
+
 const fetchUsername = async () => {
   try {
     const userDoc = await getDoc(doc(db, "users", profileUserUid.value));
@@ -336,7 +333,7 @@ const fetchUsername = async () => {
   }
 };
 
-// Fetch skills from Firestore
+
 const fetchSkills = async () => {
   try {
     loading.value = true;
@@ -367,9 +364,8 @@ const fetchSkills = async () => {
   }
 };
 
-// Open the add modal
 const openAddModal = () => {
-  // Reset the new skill form
+
   newSkill.value = {
     title: "",
     description: "",
@@ -378,14 +374,14 @@ const openAddModal = () => {
   openModal('addSkillModal');
 };
 
-// Add new skill
+
 const addSkill = async () => {
   if (!isOwner.value) return;
   
   try {
     saving.value = true;
     
-    // Add the skill to Firestore
+   
     const skillsRef = collection(db, "users", auth.currentUser.uid, "competences");
     const docRef = await addDoc(skillsRef, {
       title: newSkill.value.title,
@@ -436,7 +432,7 @@ const addSkill = async () => {
         numexpert: addTo+1
       })}
     }
-    // Add the skill to the local array with the generated ID
+    
     const newSkillWithId = {
       id: docRef.id,
       title: newSkill.value.title,
@@ -446,8 +442,7 @@ const addSkill = async () => {
     };
     
     skills.value.push(newSkillWithId);
-    
-    // Close the modal
+   
     closeModal('addSkillModal');
     
   } catch (err) {
@@ -458,9 +453,9 @@ const addSkill = async () => {
   }
 };
 
-// Open the edit modal
+
 const openEditModal = (skill) => {
-  skillToEdit.value = { ...skill }; // Make a copy of the skill
+  skillToEdit.value = { ...skill }; 
   openModal('editSkillModal');
 };
 
@@ -477,9 +472,7 @@ const saveSkill = async () => {
     await updateDoc(userRef ,{
       [`num${oldLevel}`]: increment(-1)
     })
-    // Update the skill in Firestore
-    
-    // Remove the id field before updating
+   
     const { id, ...skillData } = skillToEdit.value;
     skillData.createdAt = serverTimestamp();
     skillData.progress = true;
@@ -496,13 +489,13 @@ const saveSkill = async () => {
       T2: `Current level ${skillData.level}`
     })
     }
-    // Update the skill in the local array
+   
     const index = skills.value.findIndex(s => s.id === id);
     if (index !== -1) {
       skills.value[index] = { ...skillToEdit.value };
     }
     
-    // Close the modal
+   
     closeModal('editSkillModal');
     
   } catch (err) {
@@ -513,13 +506,13 @@ const saveSkill = async () => {
   }
 };
 
-// Open the delete confirmation modal
+
 const confirmDelete = (skill) => {
   skillToDelete.value = skill;
   openModal('deleteConfirmModal');
 };
 
-// Delete the skill
+
 const deleteSkill = async () => {
   if (!skillToDelete.value || !isOwner.value) return;
   
@@ -535,10 +528,10 @@ const deleteSkill = async () => {
     await updateDoc(userRef, {
       [`num${level_to_decrement}`]: increment(-1)
     })
-    // Remove the skill from the local array
+    
     skills.value = skills.value.filter(s => s.id !== skillToDelete.value.id);
     
-    // Close the modal
+   
     closeModal('deleteConfirmModal');
     
   } catch (err) {
@@ -550,7 +543,7 @@ const deleteSkill = async () => {
   }
 };
 
-// Utility functions for handling modals
+
 const openModal = (modalId) => {
   const modalElement = document.getElementById(modalId);
   if (modalElement) {
@@ -575,7 +568,7 @@ const closeModal = (modalId) => {
     }
   }
   
-  // Reset the appropriate ref based on which modal was closed
+  
   if (modalId === 'deleteConfirmModal') {
     skillToDelete.value = null;
   } else if (modalId === 'editSkillModal') {
@@ -586,7 +579,7 @@ const closeModal = (modalId) => {
 let unsubscribe;
 
 onMounted(() => {
-  // Listen for auth state changes
+ 
   unsubscribe = onAuthStateChanged(auth, () => {
     checkOwnership();
     fetchSkills();
@@ -594,12 +587,12 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Clean up the auth listener
+  
   if (unsubscribe) {
     unsubscribe();
   }
   
-  // Ensure any open modals are closed
+ 
   closeModal('deleteConfirmModal');
   closeModal('editSkillModal');
   closeModal('addSkillModal');
@@ -608,10 +601,10 @@ onUnmounted(() => {
 
 
 <style scoped>
-/* Bootstrap icons are needed for this component */
+
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
 
-/* Modern tech theme with glass morphism */
+
 .container {
   --primary-glow: #64ffda;
   --card-violet: #4a00e0;
@@ -623,7 +616,6 @@ onUnmounted(() => {
   --text-light: #e2e8f0;
   --border-subtle: #2d3748;
   
-  /* Accent color variables for buttons and UI elements */
   --accent-color: var(--primary-glow);
   --accent-hover: #4cd3b0;
   --accent-light: rgba(100, 255, 218, 0.1);
@@ -726,7 +718,6 @@ onUnmounted(() => {
   padding: 1rem;
 }
 
-/* Add Skill Button styling */
 .add-skill-btn {
   border-radius: 8px;
   font-weight: 500;
@@ -752,8 +743,6 @@ onUnmounted(() => {
   padding: 1rem;
 }
 
-
-/* List View Styling */
 .skills-list {
   display: flex;
   flex-direction: column;
@@ -778,7 +767,6 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* Modal styling */
 .modal-content {
   background-color: var(--card-bg);
   color: var(--text-light);
@@ -816,7 +804,7 @@ onUnmounted(() => {
   color: var(--text-light);
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 768px) {
   .heading {
     font-size: 1.8rem;
@@ -845,9 +833,7 @@ onUnmounted(() => {
     margin-top: 0.5rem;
   }
 }
-/* Skill Cards Styling */
 
-/* Overall card styling */
 .skill-card {
   border-radius: 12px;
   border: 1px solid #e0e0e0;
@@ -862,7 +848,7 @@ onUnmounted(() => {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Card header */
+
 .card-header {
   background-color: rgb(59, 59, 59);
   border-bottom: 1px solid #e0e0e0;
@@ -871,14 +857,13 @@ onUnmounted(() => {
 
 
 
-/* Skill title */
 .skill-title {
   font-weight: 600;
   margin-bottom: 0.25rem;
   color: #e0dddd;
 }
 
-/* Skill level badges */
+
 .skill-level {
   font-size: 0.75rem;
   font-weight: 500;
@@ -916,12 +901,12 @@ onUnmounted(() => {
 
 .skill-description {
   color: #e0dddd;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   margin-bottom: 0;
   line-height: 1.5;
 }
 
-/* Button styling */
+
 .skill-actions .btn {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -942,7 +927,7 @@ onUnmounted(() => {
   color: white;
 }
 
-/* Responsive adjustments */
+
 @media (max-width: 768px) {
   
   .skill-title {
