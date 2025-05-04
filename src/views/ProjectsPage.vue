@@ -106,7 +106,7 @@
 <script setup>
 /* eslint-disable */
 import { ref, onMounted, onUnmounted } from "vue";
-import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc, increment } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute } from "vue-router";
 
@@ -233,6 +233,10 @@ const addProject = async (projectData) => {
       stack: projectData.stack || [],
       createdAt: new Date()
     });
+
+    updateDoc(doc(db, "users", auth.currentUser.uid), {
+      projects_num: increment(1) 
+    })
     
     // Add the project to the local array with the generated ID
     const newProject = {
@@ -310,6 +314,9 @@ const deleteProject = async () => {
     await deleteDoc(
       doc(db, "users", auth.currentUser.uid, "projects", projectToDelete.value.id)
     );
+    updateDoc(doc(db, "users", auth.currentUser.uid), {
+      projects_num: increment(-1)
+    })
     
     // Remove the project from the local array
     projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id);
