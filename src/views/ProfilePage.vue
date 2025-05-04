@@ -1,6 +1,6 @@
 <template>
   <div class="container py-5">
-    <!-- User Profile Section -->
+    
     <div class="profile-section mb-5">
       <div class="row">
         <div class="col-md-4 text-center text-md-start mb-4 mb-md-0">
@@ -47,8 +47,7 @@
     <h2 class="text-center mb-5 section-title">{{userData?.firstName}}'s Portfolio</h2>
 
     <div class="row g-4" >
-      <!-- Competences Card -->
-
+      
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/skills`)">
         <div class="card h-100 card-competences">
           <div class="card-body text-center">
@@ -57,7 +56,7 @@
         </div>
       </div>
 
-      <!-- Projects Card -->
+     
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/projects`)">
         <div class="card h-100 card-projects">
           <div class="card-body text-center">
@@ -66,7 +65,7 @@
         </div>
       </div>
 
-      <!-- Objectives Card -->
+    
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/objectives`)">
         <div class="card h-100 card-objectives">
           <div class="card-body text-center">
@@ -75,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Timeline Card -->
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/timeline`)">
         <div class="card h-100 card-timeline">
           <div class="card-body text-center">
@@ -134,7 +132,7 @@ onAuthStateChanged(auth, (user)=>{
 let num_competence = ref(0)
 onMounted(async () => {
   try {
-    // Fetch user data from Firestore
+   
     const userDoc = await getDoc(doc(db, "users", userRoute));
     if (userDoc.exists()) {
       userData.value = userDoc.data();
@@ -186,7 +184,7 @@ onMounted(async () => {
 }
 
 
-/* Profile section styles */
+
 .profile-section {
   background-color: var(--card-bg);
   border-radius: 8px;
@@ -235,7 +233,7 @@ onMounted(async () => {
   border-color: var(--primary-color);
 }
 
-/* Section title styling */
+
 .section-title {
   color: var(--primary-color);
   font-weight: 600;
@@ -256,7 +254,7 @@ onMounted(async () => {
   opacity: 0.8;
 }
 
-/* Card styles */
+
 .card {
   border: none;
   border-radius: 8px;
@@ -286,7 +284,7 @@ onMounted(async () => {
   margin-bottom: 0;
 }
 
-/* Color variations for cards */
+
 .card-competences {
   border-top: 4px solid var(--card-blue);
 }
@@ -303,7 +301,6 @@ onMounted(async () => {
   border-top: 4px solid var(--card-red);
 }
 
-/* Responsive adjustments */
 @media (max-width: 767px) {
   .card {
     margin-bottom: 20px;

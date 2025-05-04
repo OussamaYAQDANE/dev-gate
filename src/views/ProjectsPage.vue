@@ -3,7 +3,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="text-accent heading">{{ pageTitle }}</h1>
       <div class="d-flex align-items-center gap-3">
-        <!-- Add Project Button - Only visible to the owner -->
         <button 
           v-if="isOwner" 
           class="btn btn-accent add-project-btn"
@@ -58,7 +57,6 @@
     </div>
 
     <template v-else>
-      <!-- Gallery View -->
       <ProjectGallery 
         v-if="displayMode === 'gallery'" 
         :projects="projects" 
@@ -67,7 +65,6 @@
         @delete-confirm="confirmDelete"
       />
 
-      <!-- List View -->
       <ProjectList
         v-else
         :projects="projects"
@@ -77,7 +74,6 @@
       />
     </template>
     
-    <!-- Delete Confirmation Modal -->
     <DeleteConfirmModal
       :project="projectToDelete"
       :deleting="deleting"
@@ -85,7 +81,6 @@
       @close="closeModal('deleteConfirmModal')"
     />
     
-    <!-- Edit Project Modal -->
     <EditProjectModal
       :project="projectToEdit"
       :saving="saving"
@@ -93,7 +88,6 @@
       @close="closeModal('editProjectModal')"
     />
 
-    <!-- Add Project Modal -->
     <AddProjectModal
       ref="addProjectModalRef"
       :saving="saving"
@@ -119,14 +113,13 @@ import DeleteConfirmModal from "@/components/Projects/DeleteConfirmModal.vue";
 import EditProjectModal from "@/components/Projects/EditProjectModal.vue";
 import AddProjectModal from "@/components/Projects/AddProjectModal.vue";
 
-// const auth = getAuth();
 const route = useRoute();
 
 
 const projects = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const displayMode = ref("gallery"); // Default to gallery view
+const displayMode = ref("gallery"); 
 const pageTitle = ref("Projects");
 const isOwner = ref(false);
 const currentUserUid = ref(null);
@@ -135,18 +128,15 @@ const profileUsername = ref("");
 const projectToDelete = ref(null);
 const deleting = ref(false);
 
-// New refs for edit and add functionality
 const projectToEdit = ref(null);
 const addProjectModalRef = ref(null);
 const saving = ref(false);
 
-// Check if the current user is the owner of the profile
 const checkOwnership = () => {
   if (auth.currentUser) {
     currentUserUid.value = auth.currentUser.uid;
     isOwner.value = currentUserUid.value === profileUserUid.value;
     
-    // Set the page title based on ownership
     if (isOwner.value) {
       pageTitle.value = "My Projects";
     } else {
@@ -158,7 +148,6 @@ const checkOwnership = () => {
   }
 };
 
-// Fetch the username of the profile owner
 const fetchUsername = async () => {
   try {
     const userDoc = await getDoc(doc(db, "users", profileUserUid.value));
@@ -205,23 +194,19 @@ const fetchProjects = async () => {
   }
 };
 
-// Open the add modal
 const openAddModal = () => {
-  // Reset form if ref is available
   if (addProjectModalRef.value) {
     addProjectModalRef.value.resetForm();
   }
   openModal('addProjectModal');
 };
 
-// Add new project
 const addProject = async (projectData) => {
   if (!projectData || !isOwner.value) return;
   
   try {
     saving.value = true;
     
-    // Add the project to Firestore
     const projectsRef = collection(db, "users", auth.currentUser.uid, "projects");
     const docRef = await addDoc(projectsRef, {
       title: projectData.title,
@@ -246,7 +231,6 @@ const addProject = async (projectData) => {
 
     })
     
-    // Add the project to the local array with the generated ID
     const newProject = {
       id: docRef.id,
       title: projectData.title,
@@ -259,7 +243,6 @@ const addProject = async (projectData) => {
     
     projects.value.push(newProject);
     
-    // Close the modal
     closeModal('addProjectModal');
     
   } catch (err) {
@@ -270,31 +253,25 @@ const addProject = async (projectData) => {
   }
 };
 
-// Open the edit modal
 const openEditModal = (project) => {
-  projectToEdit.value = { ...project }; // Make a copy of the project
+  projectToEdit.value = { ...project }; 
   openModal('editProjectModal');
 };
 
-// Save the edited project
 const saveProject = async (updatedProject) => {
   
   if (!updatedProject || !isOwner.value) return;
   
   try {
     saving.value = true;
-    // Update the project in Firestore
     const projectRef = doc(db, "users", auth.currentUser.uid, "projects", projectToEdit.value.id);
-    // Remove the id field before updating
     const { id, ...projectData } = updatedProject;
     await updateDoc(projectRef, projectData);
-    // Update the project in the local array
     const index = projects.value.findIndex(p => p.id === projectToEdit.value.id);
     if (index !== -1) {
       projects.value[index] = { ...updatedProject };
     }
     
-    // Close the modal
     closeModal('editProjectModal');
     
   } catch (err) {
@@ -306,13 +283,11 @@ const saveProject = async (updatedProject) => {
   }
 };
 
-// Open the delete confirmation modal
 const confirmDelete = (project) => {
   projectToDelete.value = project;
   openModal('deleteConfirmModal');
 };
 
-// Delete the project
 const deleteProject = async () => {
   if (!projectToDelete.value || !isOwner.value) return;
   
@@ -326,10 +301,8 @@ const deleteProject = async () => {
       projects_num: increment(-1)
     })
     
-    // Remove the project from the local array
     projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id);
     
-    // Close the modal
     closeModal('deleteConfirmModal');
     
   } catch (err) {
@@ -341,7 +314,6 @@ const deleteProject = async () => {
   }
 };
 
-// Utility functions for handling modals
 const openModal = (modalId) => {
   const modalElement = document.getElementById(modalId);
   if (modalElement) {
@@ -366,7 +338,6 @@ const closeModal = (modalId) => {
     }
   }
   
-  // Reset the appropriate ref based on which modal was closed
   if (modalId === 'deleteConfirmModal') {
     projectToDelete.value = null;
   } else if (modalId === 'editProjectModal') {
@@ -377,7 +348,6 @@ const closeModal = (modalId) => {
 let unsubscribe;
 
 onMounted(() => {
-  // Listen for auth state changes
   unsubscribe = onAuthStateChanged(auth, () => {
     checkOwnership();
     fetchProjects();
@@ -385,12 +355,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Clean up the auth listener
   if (unsubscribe) {
     unsubscribe();
   }
   
-  // Ensure any open modals are closed
   closeModal('deleteConfirmModal');
   closeModal('editProjectModal');
   closeModal('addProjectModal');
@@ -398,10 +366,8 @@ onUnmounted(() => {
 </script>
   
 <style scoped>
-/* Bootstrap icons are needed for this component */
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");
 
-/* Modern tech theme with glass morphism */
 .container {
   --accent-color: #3a86ff;
   --accent-hover: #2667cc;
@@ -506,7 +472,6 @@ onUnmounted(() => {
   padding: 1rem;
 }
 
-/* Add Project Button styling */
 .add-project-btn {
   border-radius: 8px;
   font-weight: 500;
@@ -519,7 +484,6 @@ onUnmounted(() => {
   box-shadow: 0 8px 15px rgba(58, 134, 255, 0.25);
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .heading {
     font-size: 1.8rem;

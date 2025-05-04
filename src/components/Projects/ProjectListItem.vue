@@ -139,8 +139,7 @@
     font-weight: 600;
     letter-spacing: 0.2px;
   }
-  
-  /* Override the standard list-group-item-action hover effect */
+
   .list-group-item-action:hover {
     background-color: var(--accent-light);
   }
