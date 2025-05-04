@@ -59,7 +59,7 @@
       <div class="col-md-6 col-lg-3" @click="$router.push(`${userRoute}/projects`)">
         <div class="card h-100 card-projects">
           <div class="card-body text-center">
-            <h4 class="card-title">Projects</h4>
+            <h4 class="card-title">Projects: {{ userData?.projects_num || 0 }}</h4>
           </div>
         </div>
       </div>
