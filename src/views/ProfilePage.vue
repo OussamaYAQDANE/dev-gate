@@ -83,11 +83,11 @@
       </div>
     </div>
     
-    <!-- Coding Hours Tracking Section -->
+  
     <div class="coding-hours-section my-5">
       <h2 class="text-center mb-4 section-title">Coding Hours</h2>
       <div class="row g-4">
-        <!-- Input form for coding hours - only visible to profile owner -->
+        
         <div v-if="isOwner" class="col-md-5">
           <div class="card h-100 card-coding-hours">
             <div class="card-body">
@@ -123,7 +123,7 @@
           </div>
         </div>
         
-        <!-- Chart for coding hours by day - centered if not owner -->
+     
         <div :class="isOwner ? 'col-md-7' : 'col-md-10 mx-auto'">
           <div class="card h-100">
             <div class="card-body">
@@ -172,7 +172,7 @@ const isLoading = ref(true);
 const objectives = ref([]);
 const currentUser = ref('');
 
-// Variables for coding hours section
+
 const hoursToday = ref(0);
 const selectedDate = ref(formatDate(new Date()));
 const saveMessage = ref('');
@@ -184,7 +184,7 @@ const isOwner = ref(false);
 const currentMonth = ref(new Date().getMonth());
 const currentYear = ref(new Date().getFullYear());
 
-// Date formatting for date input
+
 function formatDate(date) {
   const d = new Date(date);
   let month = '' + (d.getMonth() + 1);
@@ -210,7 +210,6 @@ async function getObjectives(){
   objectives.value = docSnap.docs.map((doc)=>({id:doc.id, ...doc.data()}))
 } 
 
-// Fetch user's coding hours data
 const fetchCodingHours = async () => {
   try {
     const userRef = doc(db, "users", userRoute);
@@ -227,7 +226,6 @@ const fetchCodingHours = async () => {
   }
 };
 
-// Save coding hours
 const saveHours = async () => {
   if (hoursToday.value < 0 || hoursToday.value > 24) {
     saveMessage.value = "Please enter a value between 0 and 24 hours";
@@ -244,8 +242,7 @@ const saveHours = async () => {
       year: dateToSave.getFullYear(),
       timestamp: new Date()
     };
-    
-    // Get user document
+
     const userRef = doc(db, "users", userRoute);
     const userDoc = await getDoc(userRef);
     
@@ -253,33 +250,27 @@ const saveHours = async () => {
       const userData = userDoc.data();
       let updatedHours = userData.codingHours || [];
       
-      // Check if there's already an entry for this date
       const existingEntryIndex = updatedHours.findIndex(item => 
         item.date && new Date(item.date.seconds * 1000).toDateString() === dateToSave.toDateString()
       );
       
       if (existingEntryIndex >= 0) {
-        // Update existing entry
         updatedHours[existingEntryIndex].hours = entry.hours;
         updatedHours[existingEntryIndex].timestamp = entry.timestamp;
       } else {
-        // Add new entry
         updatedHours.push(entry);
       }
       
-      // Update document
       await updateDoc(userRef, {
         codingHours: updatedHours
       });
       
-      // Update local data
       codingHours.value = updatedHours;
       renderCodingHoursChart();
       
       saveMessage.value = "Hours successfully recorded!";
       messageStatus.value = "success";
       
-      // Reset message after 3 seconds
       setTimeout(() => {
         saveMessage.value = "";
       }, 3000);
@@ -291,9 +282,7 @@ const saveHours = async () => {
   }
 };
 
-// Prepare data for the chart - daily view for the current month
 const dailyChartData = computed(() => {
-  // Get number of days in current month
   const daysInMonth = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
   const daysData = Array(daysInMonth).fill(0);
   
@@ -302,7 +291,7 @@ const dailyChartData = computed(() => {
       entry.date : new Date(entry.date.seconds * 1000);
     
     if (entryDate.getMonth() === currentMonth.value && entryDate.getFullYear() === currentYear.value) {
-      const day = entryDate.getDate() - 1; // Arrays are 0-indexed
+      const day = entryDate.getDate() - 1; 
       daysData[day] += entry.hours;
     }
   });
@@ -310,7 +299,7 @@ const dailyChartData = computed(() => {
   return daysData;
 });
 
-// Render daily coding hours chart
+
 const renderCodingHoursChart = () => {
   if (chartInstance.value) {
     chartInstance.value.destroy();
@@ -321,7 +310,6 @@ const renderCodingHoursChart = () => {
     chartContainer.value.innerHTML = '';
     chartContainer.value.appendChild(ctx);
     
-    // Create labels for days (1-31)
     const daysInMonth = new Date(currentYear.value, currentMonth.value + 1, 0).getDate();
     const dayLabels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
     
@@ -386,7 +374,7 @@ let num_competence = ref(0);
 onMounted(async () => {
   try {
 
-    // Check if current user is the profile owner
+
     onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser.value = user.uid;
@@ -406,7 +394,6 @@ onMounted(async () => {
       console.log("No such user document!");
     }
     
-    // Fetch coding hours and generate chart
     await fetchCodingHours();
     renderCodingHoursChart();
     
@@ -578,7 +565,6 @@ getObjectives();
   border-left: 4px solid var(--card-purple);
 }
 
-/* Coding hours section styling */
 .coding-hours-section .card {
   height: auto;
   min-height: 400px;
@@ -611,7 +597,6 @@ getObjectives();
   color: var(--text-color);
 }
 
-/* Responsive adjustments */
 
 @media (max-width: 767px) {
   .card {
