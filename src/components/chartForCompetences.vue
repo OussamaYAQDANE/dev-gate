@@ -140,8 +140,7 @@ onMounted(() => {
   --card-bg: #1e293b;
   --text-light: #e2e8f0;
   --border-subtle: #2d3748;
-  
-  /* Accent color variables for buttons and UI elements */
+
   --accent-color: var(--primary-glow);
   --accent-hover: #4cd3b0;
   --accent-light: rgba(100, 255, 218, 0.1);
@@ -150,13 +149,13 @@ onMounted(() => {
   max-width: 500px;
 }
 .add{
-  background-color: #1e1e2f; /* slightly lighter than background */
+  background-color: #1e1e2f; 
   padding: 20px;
   border-radius: 15px;
   color: #ffffff;
   box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px); /* gives a soft glass effect */
-  border: 1px solid rgba(255, 255, 255, 0.1); /* optional subtle border */
+  backdrop-filter: blur(8px); 
+  border: 1px solid rgba(255, 255, 255, 0.1); 
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .add:hover {
