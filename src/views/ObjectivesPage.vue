@@ -4,7 +4,7 @@ import { auth, db } from '@/firebase/firebase-config';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { onSnapshot, doc, collection, addDoc, setDoc, deleteDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import ObjectiveCard from '@/components/ObjectiveCard.vue';
 import AddObjective from '@/components/AddObjective.vue';
 import EditObjective from '@/components/EditObjective.vue';
@@ -22,8 +22,13 @@ const showModelEdit = ref(false)
 const showConfirm = ref(false)
 const ObjectiveToEditId = ref('')
 const ObjectiveToDelete = ref('')
+const currentUser = ref('')
+
 
 UserId.value = route.params.uid;
+onAuthStateChanged(auth, (user)=>{
+    currentUser.value = user.uid;
+})
 
 const getUser = ()=>{
     const docRef = doc(db, "users", UserId.value)
@@ -64,9 +69,17 @@ const hideEditPost = ()=>{showModelEdit.value = false}
 const hideConfirm = ()=>{ showConfirm.value = false}
 
 const handleAdd = async (newObj)=>{
-    const docRef = collection(db,"users",UserId.value, "objectives")
-    await addDoc(docRef, newObj)
     showModelAdd.value = false
+    const docRef = collection(db,"users",UserId.value, "objectives")
+    const activitiesRef = collection(db,"users",UserId.value, "activities")
+    await addDoc(docRef, newObj)
+    const activity = {
+        time : newObj.createdAt,
+        type: "objective",
+        T1: `A new objective has been added : ${newObj.name}`,
+        T2: `${newObj.status}`
+    }
+    await addDoc(activitiesRef, activity)
 }
 
 const showEditPost = (id)=>{
@@ -81,12 +94,38 @@ const showConfirmModel = (id)=>{
 
 const handleDelete = async ()=>{
     showConfirm.value = false;
+
+    const SnapobjectveToDelete = await getDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToDelete.value))
+    const objectveToDelete = SnapobjectveToDelete.data()
+    const activitiesRef = collection(db,"users",UserId.value, "activities")
+
     await deleteDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToDelete.value))
+    const activity = {
+            time : serverTimestamp(),
+            type: "objective",
+            T1: `Objective aborted: ${objectveToDelete.name}`,
+            T2: `${objectveToDelete.status}`
+        }
+    await addDoc(activitiesRef, activity)
 }
 
 const handleEdit = async (newObj)=>{
     showModelEdit.value = false;
+    const SnapobjectveToEdit = await getDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToEditId.value))
+    const objectveToEdit = SnapobjectveToEdit.data()
+
     await setDoc(doc(db, "users", UserId.value, "objectives", ObjectiveToEditId.value),newObj)
+    const activitiesRef = collection(db,"users",UserId.value, "activities")
+    if (objectveToEdit.status != newObj.status)
+    {
+        const activity = {
+            time : newObj.createdAt,
+            type: "objective",
+            T1: `Progress in the objective : ${newObj.name}`,
+            T2: `${newObj.status}`
+        }
+        await addDoc(activitiesRef, activity)
+    }
 }
 </script>
 
@@ -94,7 +133,7 @@ const handleEdit = async (newObj)=>{
     <div class="objectives-page">
         <h1 class="page-title">OBJECTIVES</h1>
         <div class="search-filter">
-            <button @click="showAddPost">Add Task</button>
+            <button v-if="currentUser == UserId" @click="showAddPost">Add Objective</button>
             <input v-model="name_to_search" type="text" placeholder="Search...">
             <select v-model="type_to_search">
                 <option value="">All Statuses</option>

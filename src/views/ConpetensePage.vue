@@ -265,14 +265,15 @@
 </template>
 
 <script setup>
-/* eslint-disable */
+/*eslint-disable*/
+
 import { ref, onMounted, onUnmounted } from "vue";
 import { collection, getDocs, getDoc, doc, deleteDoc, updateDoc, addDoc, serverTimestamp, increment } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useRoute } from "vue-router";
-import { db } from "@/firebase/firebase-config"; 
+import { db,auth } from "@/firebase/firebase-config"; // Adjust the import path as needed
 
-const auth = getAuth();
+// const auth = getAuth();
 const route = useRoute();
 
 const skills = ref([]);

@@ -1,5 +1,6 @@
 <script setup>
     /*  eslint-disable */
+    import { serverTimestamp } from 'firebase/firestore'
     import {ref} from 'vue'
     const emit = defineEmits(['addPost','cancel'])
 
@@ -9,7 +10,9 @@
         if (name_input.value && status_input.value){
             const newObj = {
                 name: name_input.value,
-                status: status_input.value
+                status: status_input.value,
+                createdAt: serverTimestamp()
+
             }
             emit('addPost', newObj)
         }
@@ -35,9 +38,9 @@
                         <div class="form-group">
                             <label>Status: </label>
                             <select v-model="status_input">
-                                <option value="not Started">Not Started</option>
-                                <option value="in Progress">In Progress</option>
-                                <option value="complete">Done</option>
+                                <option value="not Started">not Started</option>
+                                <option value="in Progress">in Progress</option>
+                                <option value="complete">complete</option>
                             </select>
                         </div>
                     </form>
