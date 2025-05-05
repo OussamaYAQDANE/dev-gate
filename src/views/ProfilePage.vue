@@ -212,7 +212,7 @@ async function getObjectives(){
 
 const fetchCodingHours = async () => {
   try {
-    const userRef = doc(db, "users", userRoute);
+    const userRef = doc(db, "users", userRoute.value);
     const userDoc = await getDoc(userRef);
     
     if (userDoc.exists()) {
@@ -243,7 +243,7 @@ const saveHours = async () => {
       timestamp: new Date()
     };
 
-    const userRef = doc(db, "users", userRoute);
+    const userRef = doc(db, "users", userRoute.value);
     const userDoc = await getDoc(userRef);
     
     if (userDoc.exists()) {
